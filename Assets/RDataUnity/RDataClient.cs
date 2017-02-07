@@ -11,28 +11,28 @@ namespace RData
 {
     public class RDataClient
     {
-        IJsonRpcClient _jsonRpcClient;
+        public IJsonRpcClient JsonRpcClient { get; set; }
 
         public RDataClient()
         {
-            _jsonRpcClient = new JsonRpcClient();
+            JsonRpcClient = new JsonRpcClient();
         }
 
         public IEnumerator Connect(string hostName)
         {
-            yield return CoroutineManager.StartCoroutine(_jsonRpcClient.Connect(hostName));
+            yield return CoroutineManager.StartCoroutine(JsonRpcClient.Connect(hostName));
         } 
 
         public IEnumerator Disconnect()
         {
-            yield return CoroutineManager.StartCoroutine(_jsonRpcClient.Disconnect());
+            yield return CoroutineManager.StartCoroutine(JsonRpcClient.Disconnect());
         }
 
         public IEnumerator Send<TRequest, TResponse>(TRequest request)
             where TRequest : JsonRpcBaseRequest
             where TResponse : JsonRpcBaseResponse
         {
-            yield return CoroutineManager.StartCoroutine(_jsonRpcClient.Send<TRequest, TResponse>(request));
+            yield return CoroutineManager.StartCoroutine(JsonRpcClient.Send<TRequest, TResponse>(request));
         }
 
         public void LogEvent<TEventData>(TEventData eventData, RDataBaseContext context = null)
@@ -78,6 +78,5 @@ namespace RData
             var request = new Requests.Contexts.RestoreContextRequest(context);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.RestoreContextRequest, BooleanResponse>(request));
         }
-
     }
 }
