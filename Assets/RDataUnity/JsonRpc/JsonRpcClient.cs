@@ -71,6 +71,33 @@ namespace RData.JsonRpc
             }
         }
 
+        IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
+            where TResponse : JsonRpcBaseResponse
+        {
+            lock (_responses)
+            {
+                _responses.Add(id, null);
+            }
+            _webSocket.SendAsync(message, b => { });
+
+            while (true)
+            {
+                lock (_responses)
+                {
+                    if (_responses.ContainsKey(id))
+                    {
+                        var responseJson = _responses[id];
+                        _responses.Remove(id);
+                        if (onResponse != null)
+                            onResponse(LitJson.JsonMapper.ToObject<TResponse>(responseJson));
+
+                        yield break;
+                    }
+                }
+                yield return null;
+            }
+        }
+
         private void OnConnected(object sender, EventArgs e)
         {
             Debug.Log("Websocket connected");

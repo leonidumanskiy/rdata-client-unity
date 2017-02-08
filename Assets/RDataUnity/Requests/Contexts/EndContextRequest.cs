@@ -12,6 +12,11 @@ namespace RData.Requests.Contexts
             get { return "endContext"; }
         }
 
+        public override bool IsBulked
+        {
+            get { return true; }
+        }
+
         public class Parameters
         {
             [LitJson.JsonAlias("id")]
@@ -21,7 +26,9 @@ namespace RData.Requests.Contexts
             public long TimeEnded { get; set; }
         }
 
-        public EndContextRequest(RDataBaseContext context)
+        public EndContextRequest() : base() { }
+
+        public EndContextRequest(RDataBaseContext context) : base()
         {
             Params = new Parameters()
             {

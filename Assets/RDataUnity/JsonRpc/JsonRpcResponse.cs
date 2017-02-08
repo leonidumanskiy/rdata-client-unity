@@ -8,6 +8,11 @@ namespace RData.JsonRpc
         public TResult Result { get; set; }
 
         [JsonAlias("error")]
-        public JsonRpcError<object> Error { get; set; }
+        public JsonRpcError<string> Error { get; set; } // errors with string data currently supported
+
+        public bool HasError
+        {
+            get { return Error != null; }
+        }
     }
 }

@@ -11,6 +11,11 @@ namespace RData.Requests.Events
             get { return "logEvent"; }
         }
 
+        public override bool IsBulked
+        {
+            get { return true; }
+        }
+
         public class Parameters
         {
             [LitJson.JsonAlias("id")]
@@ -29,7 +34,9 @@ namespace RData.Requests.Events
             public TEventData Data { get; set; }
         }
         
-        public LogEventRequest(RDataEvent<TEventData> eventData)
+        public LogEventRequest() : base() { }
+
+        public LogEventRequest(RDataEvent<TEventData> eventData) : base()
         {
             Params = new Parameters()
             {

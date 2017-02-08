@@ -21,7 +21,9 @@ namespace RData.Requests.User
             get { return false; }
         }
 
-        public AuthenticateRequest(string userId)
+        public AuthenticateRequest() : base() { }
+
+        public AuthenticateRequest(string userId) : base()
         {
             Params = new Parameters()
             {

@@ -12,13 +12,20 @@ namespace RData.Requests.Contexts
             get { return "restoreContext"; }
         }
 
+        public override bool IsBulked
+        {
+            get { return true; }
+        }
+
         public class Parameters
         {
             [LitJson.JsonAlias("id")]
             public string Id { get; set; }
         }
 
-        public RestoreContextRequest(RDataBaseContext context)
+        public RestoreContextRequest() : base() { }
+
+        public RestoreContextRequest(RDataBaseContext context) : base()
         {
             Params = new Parameters()
             {

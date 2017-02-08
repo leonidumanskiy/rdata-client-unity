@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using NUnit.Framework;
 using RData;
+using RData.Requests;
 using RData.Responses;
 using RData.Tests.Mock;
 
@@ -31,7 +32,8 @@ namespace RData.Tests
             _rDataClient = null;
             _jsonRpcClient = null;
         }
-
+        
+        /*
         [Test]
         public void TestTime()
         {
@@ -46,6 +48,7 @@ namespace RData.Tests
                 Debug.Log(i + "; " + DateTime.Now);
             }
         }
+        */
 
         [Test]
         public void TestMockRequest()
@@ -58,8 +61,26 @@ namespace RData.Tests
             string test = "test";
             var request = new MockRequest(test);
             var expectedResponse = new BooleanResponse(true);
+
             _jsonRpcClient.Expect(request, expectedResponse);
             yield return StartCoroutine(_rDataClient.Send<MockRequest, BooleanResponse>(request));
+            Assert.AreEqual(request.Response.Result, expectedResponse.Result);
+        }
+
+        [Test]
+        public void TestAuthentication()
+        {
+            TestCoroutine(TestAuthenticationCoro());
+        }
+
+        public IEnumerator TestAuthenticationCoro()
+        {
+            var userId = "testUser";
+            var request = new Requests.User.AuthenticateRequest(userId);
+            var expectedResponse = new BooleanResponse(true);
+
+            _jsonRpcClient.Expect(request, expectedResponse);
+            yield return StartCoroutine(_rDataClient.Send<Requests.User.AuthenticateRequest, BooleanResponse>(request));
             Assert.AreEqual(request.Response.Result, expectedResponse.Result);
         }
     }

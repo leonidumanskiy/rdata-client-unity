@@ -12,6 +12,11 @@ namespace RData.Requests.Contexts
             get { return "startContext"; }
         }
 
+        public override bool IsBulked
+        {
+            get { return true; }
+        }
+
         public class Parameters
         {
             [LitJson.JsonAlias("id")]
@@ -33,7 +38,9 @@ namespace RData.Requests.Contexts
             public long TimeStarted { get; set; }
         }
         
-        public StartContextRequest(RDataContext<TContextData> context)
+        public StartContextRequest() : base() { }
+
+        public StartContextRequest(RDataContext<TContextData> context) : base()
         {
             Params = new Parameters()
             {
