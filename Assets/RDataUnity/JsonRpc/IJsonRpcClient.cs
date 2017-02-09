@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace RData.JsonRpc
 {
@@ -13,7 +14,7 @@ namespace RData.JsonRpc
         IEnumerator Send<TRequest, TResponse>(TRequest request)
             where TRequest : JsonRpcBaseRequest
             where TResponse : JsonRpcBaseResponse;
-        IEnumerator SendJson<TResponse>(string json, string requestId, System.Action<TResponse> onResponse)
+        IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
             where TResponse : JsonRpcBaseResponse;
     }
 }

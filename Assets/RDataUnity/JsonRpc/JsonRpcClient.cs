@@ -70,8 +70,8 @@ namespace RData.JsonRpc
                 yield return null;
             }
         }
-
-        IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
+        
+        public IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
             where TResponse : JsonRpcBaseResponse
         {
             lock (_responses)

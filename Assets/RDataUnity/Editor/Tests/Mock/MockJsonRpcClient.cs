@@ -12,7 +12,7 @@ public class MockJsonRpcClient : IJsonRpcClient
 
     public bool IsAvailable { get; private set; }
 
-    private Dictionary<JsonRpcBaseRequest, JsonRpcBaseResponse> _expectedResponses = new Dictionary<JsonRpcBaseRequest, JsonRpcBaseResponse>();
+    private Dictionary<string, JsonRpcBaseResponse> _expectedResponses = new Dictionary<string, JsonRpcBaseResponse>();
 
     public IEnumerator Connect(string hostName)
     {
@@ -30,8 +30,17 @@ public class MockJsonRpcClient : IJsonRpcClient
         where TRequest : JsonRpcBaseRequest
         where TResponse : JsonRpcBaseResponse
     {
-        Assert.IsTrue(_expectedResponses.ContainsKey(request));
-        request.SetResponse(_expectedResponses[request]);
+        Assert.IsTrue(_expectedResponses.ContainsKey(request.Id));
+        request.SetResponse(_expectedResponses[request.Id]);
+        yield return null;
+    }
+
+    public IEnumerator SendJson<TResponse>(string message, string requestId, Action<TResponse> onResponse) where TResponse : JsonRpcBaseResponse
+    {
+        Assert.IsTrue(_expectedResponses.ContainsKey(requestId));
+        if(onResponse != null)
+            onResponse((TResponse)_expectedResponses[requestId]);
+
         yield return null;
     }
 
@@ -39,6 +48,6 @@ public class MockJsonRpcClient : IJsonRpcClient
         where TRequest : JsonRpcBaseRequest
         where TResponse : JsonRpcBaseResponse
     {
-        _expectedResponses[request] = response;
+        _expectedResponses[request.Id] = response;
     }
 }

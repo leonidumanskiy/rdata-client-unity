@@ -19,7 +19,7 @@ namespace RData.JsonRpc
                 throw new JsonRpcException(string.Format("Response object is {0}, expected it to be {1}", response.GetType().Name, typeof(TResponse).Name));
         }
 
-        protected JsonRpcRequest()
+        protected JsonRpcRequest() : base()
         {
             Id = Guid.NewGuid().ToString();
         }

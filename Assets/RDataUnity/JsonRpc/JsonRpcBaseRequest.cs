@@ -13,9 +13,17 @@ namespace RData.JsonRpc
         [JsonAlias("method")]
         public virtual string Method { get; set; }
 
+        [JsonAlias("created_at")]
+        public virtual long CreatedAt { get; set; } // This is not used by the server, but the the rdata library instead
+
         [JsonIgnore]
         public virtual bool IsBulked { get; set; }
-
+        
         public virtual void SetResponse(object response){}
+        
+        public JsonRpcBaseRequest()
+        {
+            CreatedAt = Tools.Time.DateTimeToUnixTime(System.DateTime.UtcNow);
+        }
     }
 }

@@ -29,16 +29,13 @@ namespace RData.Requests.System
         {
             get { return Params.Requests.Count; }
         }
-
-        public DateTime CreatedAt { get; set; }
-
+        
         public BulkRequest() : base()
         {
             Params = new Parameters()
             {
                 Requests = new List<JsonRpcBaseRequest>()
             };
-            CreatedAt = DateTime.UtcNow;
         }
 
         public void AddRequest(JsonRpcBaseRequest request)

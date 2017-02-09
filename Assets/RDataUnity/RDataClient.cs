@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using RData.Data;
 using RData.JsonRpc;
 using RData.Requests;
 using RData.Responses;
@@ -16,13 +17,11 @@ namespace RData
 {
     public class RDataClient
     {
-        private const string RDataDir = "rdata";
-        private const string ChunksDir = "chunks";
-        private const char ChunkNameDelimeter = '_';
-
         private const double ChunkLifeTime = 10d; // Seconds
 
         public IJsonRpcClient JsonRpcClient { get; set; }
+
+        public ILocalDataRepository LocalDataRepository { get; set; }
 
         public JsonRpcError<string> LastError { get; private set; }
 
@@ -34,27 +33,13 @@ namespace RData
         public bool Authenticated { get; private set; }
 
         public string UserId { get; private set; }
-
-        private string RDataDirectoryPath
-        {
-            get { return Path.Combine(Application.persistentDataPath, RDataDir); }
-        }
-
-        private string UserDataDirectory
-        {
-            get { return Path.Combine(RDataDirectoryPath, UserId); }
-        }
-
-        private string ChunksDirectory
-        {
-            get { return Path.Combine(UserDataDirectory, ChunksDir); }
-        }
-
+        
         private BulkRequest _activeChunk = new BulkRequest();
         
         public RDataClient()
         {
             JsonRpcClient = new JsonRpcClient();
+            LocalDataRepository = new LocalDataRepository();
         }
 
         public IEnumerator Connect(string hostName)
@@ -89,30 +74,18 @@ namespace RData
             {
                 if (IsAvailable) // When available, try to send out chunks
                 {
-                    // Send out chunks saved on the disk
-                    var info = new DirectoryInfo(ChunksDir);
-                    var fileInfo = info.GetFiles();
-                    var filesSorted = fileInfo.OrderBy(file => int.Parse(file.Name.Split(ChunkNameDelimeter)[0])); // Sort files by timestamp 
-                    foreach (var file in filesSorted)
+                    var localDataChunks = LocalDataRepository.LoadDataChunksJson(UserId);
+                    foreach(var chunk in localDataChunks)
                     {
-                        string[] nameParts = file.Name.Split(ChunkNameDelimeter);
-                        if (nameParts.Length > 2)
-                            throw new RDataException("Chunk name path does not match the pattern. Discarding");
-
-                        var date = nameParts[0];
-                        var requestId = nameParts[1];
-
-                        var json = File.ReadAllText(file.FullName);
-
-                        yield return CoroutineManager.StartCoroutine(JsonRpcClient.SendJson<BooleanResponse>(json, requestId, (response) => 
+                        yield return CoroutineManager.StartCoroutine(JsonRpcClient.SendJson<BooleanResponse>(chunk.requestJson, chunk.requestId, (response) =>
                         {
-                            if(response.Result)
-                                File.Delete(file.FullName); // At this point we received a positive answer from the server
+                            if (response.Result)
+                                LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId); // At this point we received a positive answer from the server
                         }));
                     }
 
                     // Check if the current chunk has expired, if so, save and refresh it
-                    if (DateTime.UtcNow > _activeChunk.CreatedAt + TimeSpan.FromSeconds(ChunkLifeTime))
+                    if (DateTime.UtcNow > Tools.Time.UnixTimeToDateTime(_activeChunk.CreatedAt) + TimeSpan.FromSeconds(ChunkLifeTime))
                     {
                         SaveActiveChunk();
                     }
@@ -121,18 +94,16 @@ namespace RData
                 yield return null;
             }
         }
+
+        private void ResetActiveChunk()
+        {
+            SaveActiveChunk();
+            _activeChunk = new BulkRequest();
+        }
                 
         private void SaveActiveChunk()
         {
-            var json = LitJson.JsonMapper.ToJson(_activeChunk);
-            var path = GetChunkPath(_activeChunk);
-            File.WriteAllText(path, json);
-            _activeChunk = new BulkRequest();
-        }
-
-        private string GetChunkPath(BulkRequest request)
-        {
-            return Path.Combine(ChunksDir, string.Format("{0}{1}{2}", Tools.Time.DateTimeToUnixTime(request.CreatedAt), ChunkNameDelimeter, request.Id));
+            LocalDataRepository.SaveDataChunk(UserId, _activeChunk);
         }
 
         public virtual IEnumerator Authenticate(string userId)
