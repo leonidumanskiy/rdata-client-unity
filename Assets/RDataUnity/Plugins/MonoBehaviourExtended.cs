@@ -134,9 +134,13 @@ public class MonoBehaviourExtended : MonoBehaviour
             {
                 // Do nothing. Standard yield return null or something like that
             }
+            else if(current is UnityEngine.Coroutine)
+            {
+                throw new Exception("Editor coroutine yielded UnityEngine.Coroutine. Use MonoBehaviorExtended.StartCoroutine instead of UnityEngine.StartCoroutine");
+            }
             else
             {
-                Debug.Log("Unknown type of yielded object: " + current.GetType());
+                throw new Exception("Unknown type of yielded object: " + current.GetType());
             }
         }
         else

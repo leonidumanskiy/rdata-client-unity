@@ -37,9 +37,9 @@ public class CoroutineManager : MonoBehaviourExtended
         }
     }
 
-    public static new Coroutine StartCoroutine(IEnumerator routine)
+    public static new object StartCoroutine(IEnumerator routine)
     {
-        return ((MonoBehaviour)instance).StartCoroutine(routine);
+        return ((MonoBehaviourExtended)instance).StartCoroutine(routine);
     } 
 
 }
