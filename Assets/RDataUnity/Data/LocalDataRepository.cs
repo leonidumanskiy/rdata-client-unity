@@ -42,6 +42,8 @@ namespace RData.Data
 
         public void SaveDataChunk(string userId, BulkRequest dataChunk)
         {
+            EnsureChunksDirectoryExists(userId);
+
             var json = LitJson.JsonMapper.ToJson(dataChunk);
             var path = GetChunkFilePath(userId, dataChunk);
             File.WriteAllText(path, json);
@@ -49,6 +51,8 @@ namespace RData.Data
 
         public IEnumerable<LocalDataChunkInfo> LoadDataChunksJson(string userId)
         {
+            EnsureChunksDirectoryExists(userId);
+
             List<LocalDataChunkInfo> result = new List<LocalDataChunkInfo>();
             
             var info = new DirectoryInfo(ChunksDir);
@@ -69,6 +73,11 @@ namespace RData.Data
         public void RemoveDataChunk(string userId, string requestId)
         {
             File.Delete(GetChunkFilePath(userId, requestId));
+        }
+
+        private void EnsureChunksDirectoryExists(string userId)
+        {
+            Directory.CreateDirectory(GetChunksDirectory(userId));
         }
     }
 }

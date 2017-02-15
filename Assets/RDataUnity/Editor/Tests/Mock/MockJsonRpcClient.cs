@@ -12,42 +12,66 @@ public class MockJsonRpcClient : IJsonRpcClient
 
     public bool IsAvailable { get; private set; }
 
-    private Dictionary<string, JsonRpcBaseResponse> _expectedResponses = new Dictionary<string, JsonRpcBaseResponse>();
+    private Dictionary<string, JsonRpcBaseResponse> _expectedRequestIds = new Dictionary<string, JsonRpcBaseResponse>();
+    private Dictionary<string, JsonRpcBaseResponse> _expectedRequestMethods = new Dictionary<string, JsonRpcBaseResponse>();
 
-    public IEnumerator Connect(string hostName)
+    public IEnumerator Open(string hostName, bool waitUntilConnected = true, double waitTimeout = 1d)
     {
         IsAvailable = true;
         yield return null;
     }
 
-    public IEnumerator Disconnect()
+    public IEnumerator Close()
+    {
+        CloseImmidiately();
+        yield return null;
+    }
+
+    public void CloseImmidiately()
     {
         IsAvailable = false;
-        yield return null;
     }
 
     public IEnumerator Send<TRequest, TResponse>(TRequest request)
         where TRequest : JsonRpcBaseRequest
         where TResponse : JsonRpcBaseResponse
     {
-        Assert.IsTrue(_expectedResponses.ContainsKey(request.Id));
-        request.SetResponse(_expectedResponses[request.Id]);
-        yield return null;
+        if(_expectedRequestIds.ContainsKey(request.Id))
+        {
+            request.SetResponse(_expectedRequestIds[request.Id]);
+            yield break;
+        }
+        
+        else if (_expectedRequestMethods.ContainsKey(request.Method))
+        {
+            request.SetResponse(_expectedRequestMethods[request.Method]);
+            yield break;
+        }                
+        else
+        {
+            throw new Exception("Unexpected request");
+        }
     }
 
     public IEnumerator SendJson<TResponse>(string message, string requestId, Action<TResponse> onResponse) where TResponse : JsonRpcBaseResponse
     {
-        Assert.IsTrue(_expectedResponses.ContainsKey(requestId));
+        Assert.IsTrue(_expectedRequestIds.ContainsKey(requestId));
         if(onResponse != null)
-            onResponse((TResponse)_expectedResponses[requestId]);
+            onResponse((TResponse)_expectedRequestIds[requestId]);
 
         yield return null;
     }
 
-    public void Expect<TRequest, TResponse>(TRequest request, TResponse response)
-        where TRequest : JsonRpcBaseRequest
+    public void ExpectRequestWithId<TResponse>(string requestId, TResponse response)
         where TResponse : JsonRpcBaseResponse
     {
-        _expectedResponses[request.Id] = response;
+        _expectedRequestIds[requestId] = response;
     }
+
+    public void ExpectRequestWithMethod<TResponse>(string command, TResponse response)
+        where TResponse : JsonRpcBaseResponse
+    {
+        _expectedRequestMethods[command] = response;
+    }
+
 }

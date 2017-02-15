@@ -42,14 +42,19 @@ namespace RData
             LocalDataRepository = new LocalDataRepository();
         }
 
-        public IEnumerator Connect(string hostName)
+        public IEnumerator Open(string hostName, bool waitUntilConnected = true, double waitTimeout = 3d)
         {
-            yield return CoroutineManager.StartCoroutine(JsonRpcClient.Connect(hostName));
+            yield return CoroutineManager.StartCoroutine(JsonRpcClient.Open(hostName, waitUntilConnected, waitTimeout));
         } 
 
-        public IEnumerator Disconnect()
+        public IEnumerator Close()
         {
-            yield return CoroutineManager.StartCoroutine(JsonRpcClient.Disconnect());
+            yield return CoroutineManager.StartCoroutine(JsonRpcClient.Close());
+        }
+
+        public void CloseImmidiately()
+        {
+            JsonRpcClient.CloseImmidiately();
         }
 
         public IEnumerator Send<TRequest, TResponse>(TRequest request)
@@ -128,7 +133,7 @@ namespace RData
             LogEvent(evt);
         }
 
-        public void LogEvent<TEventData>(RDataEvent<TEventData> evt)
+        protected void LogEvent<TEventData>(RDataEvent<TEventData> evt)
         {
             var request = new Requests.Events.LogEventRequest<TEventData>(evt);
             CoroutineManager.StartCoroutine(Send<Requests.Events.LogEventRequest<TEventData>, BooleanResponse>(request));

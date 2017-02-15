@@ -2,45 +2,101 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using WebSocketSharp;
 
 namespace RData.JsonRpc
 {
     public class JsonRpcClient : IJsonRpcClient
     {
+        private string _hostName;
+
         private WebSocket _webSocket;
 
         private Dictionary<string, string> _responses = new Dictionary<string, string>();
         
+        private float _reconnectTimeout = 5;
+
+        private bool _closed = false;
+
+        private volatile bool _mustReconnect = false;
+
         public bool IsAvailable
         {
             get { return _webSocket != null && _webSocket.IsAlive; }
         }
         
-        public IEnumerator Connect(string hostName)
+        public IEnumerator Open(string hostName, bool waitUntilConnected = true, double waitTimeout = 3d)
         {
-            _webSocket = new WebSocket(hostName);
-            
-            _webSocket.OnOpen += OnConnected;
-            _webSocket.OnMessage += OnMessage;
-            _webSocket.OnClose += OnDisconnected;
-            _webSocket.OnError += OnError;
+            _hostName = hostName;
+            _closed = false;
 
-            _webSocket.ConnectAsync();
+            CoroutineManager.StartCoroutine(WebsocketConnectionObserver());
 
-            while (!IsAvailable)
+            if (waitUntilConnected)
             {
-                yield return null;
+                var now = DateTime.UtcNow;
+                while (!IsAvailable && DateTime.UtcNow < now + TimeSpan.FromSeconds(waitTimeout))
+                {
+                    yield return null;
+                }
             }
         }
 
-        public IEnumerator Disconnect()
+        public IEnumerator WebsocketConnectionObserver()
         {
-            _webSocket.CloseAsync();
+            using (_webSocket = new WebSocket(_hostName))
+            {
+                _webSocket.Log.Output = Log;
+
+                _webSocket.OnOpen += OnWebsocketConnected;
+                _webSocket.OnMessage += OnWebsocketMessage;
+                _webSocket.OnClose += OnWebsocketDisconnected;
+                _webSocket.OnError += OnWebsocketError;
+
+                _webSocket.ConnectAsync();
+
+                while (!_closed)
+                {
+                    if (_mustReconnect)
+                    {
+                        Debug.Log("Must reconnect. Reconnecting...");
+                        _webSocket.ConnectAsync();
+
+                        var now = DateTime.UtcNow;
+                        while (!IsAvailable && DateTime.UtcNow < now + TimeSpan.FromSeconds(_reconnectTimeout))
+                        {
+                            yield return null;
+                        }
+
+                        if (IsAvailable)
+                        {
+                            _mustReconnect = false;
+                            Debug.Log("Successfully reconencted to websocket server.");
+                        }
+                    }
+                    yield return null;
+                }
+            }
+
+            // Any cleanup needed goes here
+            Debug.Log("Websocket object destroyed");
+        }
+
+        public IEnumerator Close()
+        {
+            CloseImmidiately();
+
             while (IsAvailable)
             {
                 yield return null;
             }
+        }
+        
+        public void CloseImmidiately()
+        {
+            _closed = true;
+            _webSocket.CloseAsync();
         }
 
         public IEnumerator Send<TRequest, TResponse>(TRequest request)
@@ -97,23 +153,24 @@ namespace RData.JsonRpc
                 yield return null;
             }
         }
-
-        private void OnConnected(object sender, EventArgs e)
+        
+        private void OnWebsocketConnected(object sender, EventArgs e)
         {
             Debug.Log("Websocket connected");
         }
 
-        private void OnDisconnected(object sender, EventArgs e)
+        private void OnWebsocketDisconnected(object sender, CloseEventArgs e)
         {
+            _mustReconnect = true;
             Debug.Log("Websocket disconnected");
         }
 
-        private void OnError(object sender, ErrorEventArgs e)
+        private void OnWebsocketError(object sender, ErrorEventArgs e)
         {
             Debug.Log("WebSocket error: " + e.Message);
         }
 
-        private void OnMessage(object sender, MessageEventArgs e)
+        private void OnWebsocketMessage(object sender, MessageEventArgs e)
         {
             var response = LitJson.JsonMapper.ToObject<JsonRpcBaseResponse>(e.Data);
             lock (_responses)
@@ -123,6 +180,16 @@ namespace RData.JsonRpc
 
                 _responses[response.Id] = e.Data;
             }
+        }
+
+        private void Log(LogData logData, string message)
+        {
+            if (logData.Level == LogLevel.Debug || logData.Level == LogLevel.Info || logData.Level == LogLevel.Trace)
+                Debug.Log(logData.Message);
+            else if (logData.Level == LogLevel.Warn)
+                Debug.LogWarning(logData.Message);
+            else if (logData.Level == LogLevel.Error || logData.Level == LogLevel.Fatal)
+                Debug.LogError(logData.Message);
         }
     }
 }
