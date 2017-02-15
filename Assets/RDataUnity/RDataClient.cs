@@ -39,6 +39,9 @@ namespace RData
         public RDataClient()
         {
             JsonRpcClient = new JsonRpcClient();
+            JsonRpcClient.OnLostConnection += OnLostConnection;
+            JsonRpcClient.OnReconnected += OnReconnected;
+
             LocalDataRepository = new LocalDataRepository();
         }
 
@@ -71,6 +74,16 @@ namespace RData
 
                 _activeChunk.AddRequest(request);
             }
+        }
+
+        private void OnLostConnection()
+        {
+        }
+
+        private void OnReconnected()
+        {
+            // Restore interrupted contexts
+            RestoreInterruptedContexts();
         }
 
         private IEnumerator ProcessBulkedRequests()
@@ -111,7 +124,7 @@ namespace RData
             LocalDataRepository.SaveDataChunk(UserId, _activeChunk);
         }
 
-        public virtual IEnumerator Authenticate(string userId)
+        public virtual IEnumerator Authenticate(string userId, bool endInterruptedContexts = true)
         {
             var request = new Requests.User.AuthenticateRequest(userId);
             yield return CoroutineManager.StartCoroutine(Send<Requests.User.AuthenticateRequest, BooleanResponse>(request));
@@ -122,6 +135,12 @@ namespace RData
             {
                 Authenticated = request.Response.Result;
                 UserId = userId;
+
+                if (endInterruptedContexts)
+                {
+                    // When game is started (not reconnecting), close all previously interrupted contexts (by default we assume we lost them)
+                    EndInterruptedContexts();   
+                }
 
                 CoroutineManager.StartCoroutine(ProcessBulkedRequests()); // Start bulk request processing
             }
@@ -162,13 +181,17 @@ namespace RData
             var request = new Requests.Contexts.EndContextRequest(context);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.EndContextRequest, BooleanResponse>(request));
         }
-        
-        public void RestoreContext(RDataBaseContext context)
-        {
-            context.Restore();
 
-            var request = new Requests.Contexts.RestoreContextRequest(context);
-            CoroutineManager.StartCoroutine(Send<Requests.Contexts.RestoreContextRequest, BooleanResponse>(request));
+        public void RestoreInterruptedContexts()
+        {
+            var request = new Requests.Contexts.RestoreInterruptedContextsRequest();
+            CoroutineManager.StartCoroutine(Send<Requests.Contexts.RestoreInterruptedContextsRequest, BooleanResponse>(request));
+        }
+
+        public void EndInterruptedContexts()
+        {
+            var request = new Requests.Contexts.EndInterruptedContextsRequest();
+            CoroutineManager.StartCoroutine(Send<Requests.Contexts.EndInterruptedContextsRequest, BooleanResponse>(request));
         }
     }
 }

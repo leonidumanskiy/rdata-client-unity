@@ -17,5 +17,7 @@ namespace RData.JsonRpc
             where TResponse : JsonRpcBaseResponse;
         IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
             where TResponse : JsonRpcBaseResponse;
+        event Action OnLostConnection;
+        event Action OnReconnected;
     }
 }

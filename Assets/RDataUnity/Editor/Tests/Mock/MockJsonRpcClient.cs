@@ -15,6 +15,9 @@ public class MockJsonRpcClient : IJsonRpcClient
     private Dictionary<string, JsonRpcBaseResponse> _expectedRequestIds = new Dictionary<string, JsonRpcBaseResponse>();
     private Dictionary<string, JsonRpcBaseResponse> _expectedRequestMethods = new Dictionary<string, JsonRpcBaseResponse>();
 
+    public event Action OnLostConnection;
+    public event Action OnReconnected;
+
     public IEnumerator Open(string hostName, bool waitUntilConnected = true, double waitTimeout = 1d)
     {
         IsAvailable = true;
