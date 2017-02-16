@@ -36,6 +36,7 @@ namespace RData.Tests.Mock
         {
             var requestJson = LitJson.JsonMapper.ToJson(dataChunk);
             LocalDataChunkInfo chunkInfo = new LocalDataChunkInfo() { requestId = dataChunk.Id, requestJson = requestJson, requestCreatedAt = dataChunk.CreatedAt };
+            _dataChunks[userId].Add(dataChunk.Id, chunkInfo);
         }
     }
 }

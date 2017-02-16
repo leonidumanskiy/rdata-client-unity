@@ -9,7 +9,7 @@ namespace RData.JsonRpc
     {
         bool IsAvailable { get; }
 
-        IEnumerator Open(string hostName, bool waitUntilConnected=true, double waitTimeout=1d);
+        IEnumerator Open(string hostName, bool waitUntilConnected = true, double waitTimeout = 1d);
         IEnumerator Close();
         void CloseImmidiately();
         IEnumerator Send<TRequest, TResponse>(TRequest request)
@@ -17,7 +17,7 @@ namespace RData.JsonRpc
             where TResponse : JsonRpcBaseResponse;
         IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
             where TResponse : JsonRpcBaseResponse;
-        event Action OnLostConnection;
+
         event Action OnReconnected;
     }
 }

@@ -20,9 +20,7 @@ namespace RData.JsonRpc
         private bool _closed = false;
 
         private volatile bool _lostConnection = false;
-
-        public event Action OnLostConnection;
-
+        
         public event Action OnReconnected;
 
         public bool IsAvailable
@@ -60,9 +58,12 @@ namespace RData.JsonRpc
 
                 _webSocket.ConnectAsync();
 
-                while (!_closed)
+                while (true)
                 {
-                    if (_lostConnection)
+                    if (_closed)
+                        yield break;
+
+                    if(_lostConnection)
                     {
                         Debug.Log("Must reconnect. Reconnecting...");
                         _webSocket.ConnectAsync();
@@ -77,6 +78,9 @@ namespace RData.JsonRpc
                         {
                             _lostConnection = false;
                             Debug.Log("Successfully reconencted to websocket server.");
+
+                            if (OnReconnected != null)
+                                OnReconnected();
                         }
                     }
                     yield return null;

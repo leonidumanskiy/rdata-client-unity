@@ -33,13 +33,12 @@ namespace RData
         public bool Authenticated { get; private set; }
 
         public string UserId { get; private set; }
-        
+
         private BulkRequest _activeChunk = new BulkRequest();
-        
+
         public RDataClient()
         {
             JsonRpcClient = new JsonRpcClient();
-            JsonRpcClient.OnLostConnection += OnLostConnection;
             JsonRpcClient.OnReconnected += OnReconnected;
 
             LocalDataRepository = new LocalDataRepository();
@@ -48,7 +47,7 @@ namespace RData
         public IEnumerator Open(string hostName, bool waitUntilConnected = true, double waitTimeout = 3d)
         {
             yield return CoroutineManager.StartCoroutine(JsonRpcClient.Open(hostName, waitUntilConnected, waitTimeout));
-        } 
+        }
 
         public IEnumerator Close()
         {
@@ -67,17 +66,14 @@ namespace RData
             if (!request.IsBulked)
             {
                 yield return CoroutineManager.StartCoroutine(JsonRpcClient.Send<TRequest, TResponse>(request)); // Send request immidiately
-            } else 
+            }
+            else
             {
                 if (!Authenticated)
                     throw new RDataException("You need to be authenticated to send " + typeof(TRequest).Name);
 
                 _activeChunk.AddRequest(request);
             }
-        }
-
-        private void OnLostConnection()
-        {
         }
 
         private void OnReconnected()
@@ -93,7 +89,7 @@ namespace RData
                 if (IsAvailable) // When available, try to send out chunks
                 {
                     var localDataChunks = LocalDataRepository.LoadDataChunksJson(UserId);
-                    foreach(var chunk in localDataChunks)
+                    foreach (var chunk in localDataChunks)
                     {
                         yield return CoroutineManager.StartCoroutine(JsonRpcClient.SendJson<BooleanResponse>(chunk.requestJson, chunk.requestId, (response) =>
                         {
@@ -118,7 +114,7 @@ namespace RData
             SaveActiveChunk();
             _activeChunk = new BulkRequest();
         }
-                
+
         private void SaveActiveChunk()
         {
             LocalDataRepository.SaveDataChunk(UserId, _activeChunk);
@@ -131,7 +127,8 @@ namespace RData
             if (request.Response.HasError)
             {
                 LastError = request.Response.Error;
-            } else
+            }
+            else
             {
                 Authenticated = request.Response.Result;
                 UserId = userId;
@@ -139,7 +136,7 @@ namespace RData
                 if (endInterruptedContexts)
                 {
                     // When game is started (not reconnecting), close all previously interrupted contexts (by default we assume we lost them)
-                    EndInterruptedContexts();   
+                    EndInterruptedContexts();
                 }
 
                 CoroutineManager.StartCoroutine(ProcessBulkedRequests()); // Start bulk request processing
