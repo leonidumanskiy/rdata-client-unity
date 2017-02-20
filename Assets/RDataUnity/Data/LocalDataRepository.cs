@@ -12,6 +12,7 @@ namespace RData.Data
     public class LocalDataRepository : ILocalDataRepository
     {
         private const string RDataDir = "rdata";
+        private const string DataDir = "data";
         private const string ChunksDir = "chunks";
         private const char ChunkNameDelimeter = '_';
 
@@ -22,10 +23,15 @@ namespace RData.Data
 
         private string GetChunksDirectory(string userId)
         {
-            return Path.Combine(GetUserDataDirectory(userId), ChunksDir);
+            return Path.Combine(GetUserDirectory(userId), ChunksDir);
         }
 
-        private string GetUserDataDirectory(string userId)
+        private string GetDataDirectory(string userId)
+        {
+            return Path.Combine(GetUserDirectory(userId), DataDir);
+        }
+
+        private string GetUserDirectory(string userId)
         {
             return Path.Combine(RDataDirectoryPath, userId);
         }
@@ -38,6 +44,11 @@ namespace RData.Data
         private string GetChunkFilePath(string userId, string requestId)
         {
             return Path.Combine(GetChunksDirectory(userId), requestId);
+        }
+
+        private string GetDataFilePath(string userId, string key)
+        {
+            return Path.Combine(GetDataDirectory(userId), key);
         }
 
         public void SaveDataChunk(string userId, BulkRequest dataChunk)
@@ -75,9 +86,40 @@ namespace RData.Data
             File.Delete(GetChunkFilePath(userId, requestId));
         }
 
+        private void EnsureDataDirectoryExists(string userId)
+        {
+            Directory.CreateDirectory(GetDataDirectory(userId));
+        }
+
         private void EnsureChunksDirectoryExists(string userId)
         {
             Directory.CreateDirectory(GetChunksDirectory(userId));
+        }
+
+        public void SaveData<TData>(string userId, string key, TData data)
+        {
+            EnsureDataDirectoryExists(userId);
+            var json = LitJson.JsonMapper.ToJson(data);
+            var path = GetDataFilePath(userId, key);
+            File.WriteAllText(path, json);
+        }
+
+        public TData LoadData<TData>(string userId, string key)
+            where TData : class
+        {
+            var path = GetDataFilePath(userId, key);
+            if (!File.Exists(path))
+                return null;
+
+            var json = File.ReadAllText(path);
+            var data = LitJson.JsonMapper.ToObject<TData>(json);
+            return data;
+        }
+
+        public void RemoveData(string userId, string key)
+        {
+            var path = GetDataFilePath(userId, key);
+            File.Delete(path);
         }
     }
 }

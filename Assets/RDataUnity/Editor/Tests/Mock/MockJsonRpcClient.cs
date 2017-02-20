@@ -76,4 +76,9 @@ public class MockJsonRpcClient : IJsonRpcClient
         _expectedRequestMethods[command] = response;
     }
 
+    public void TemporaryDisconnect()
+    {
+        OnReconnected();
+    }
+
 }

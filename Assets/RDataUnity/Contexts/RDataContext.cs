@@ -3,11 +3,12 @@
 namespace RData.Contexts
 {
     /// <summary>
-    /// This class provides high-level data structure for
+    /// This class provides high-level data structure
     /// for the Context
     /// </summary>
     /// <typeparam name="TContextData">Type of context data</typeparam>
-    public sealed class RDataContext<TContextData> : RDataBaseContext
+    public class RDataContext<TContextData> : RDataBaseContext
+        where TContextData : class, new()
     {
         public TContextData Data { get; set; }
 
@@ -28,6 +29,11 @@ namespace RData.Contexts
 
         public RDataContext(TContextData data, RDataBaseContext parentContext = null, bool persistent = false) :
             this(System.Guid.NewGuid().ToString(), typeof(TContextData).Name, (parentContext != null ? parentContext.Id : null), persistent, data, RDataContextStatus.Started, System.DateTime.UtcNow, default(System.DateTime))
+        {
+        }
+
+        public RDataContext() : 
+            this(new TContextData())
         {
         }
 

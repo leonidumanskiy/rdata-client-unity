@@ -6,6 +6,7 @@ using RData.Contexts;
 namespace RData.Requests.Contexts
 {
     public class StartContextRequest<TContextData> : JsonRpcRequest<StartContextRequest<TContextData>.Parameters, BooleanResponse>
+        where TContextData : class, new()
     {
         public override string Method
         {

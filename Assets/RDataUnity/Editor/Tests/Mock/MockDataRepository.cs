@@ -11,7 +11,20 @@ namespace RData.Tests.Mock
 {
     public class MockDataRepository : ILocalDataRepository
     {
+        public Dictionary<string, string> _data = new Dictionary<string, string>();
         public Dictionary<string, Dictionary<string, LocalDataChunkInfo>> _dataChunks = new Dictionary<string, Dictionary<string, LocalDataChunkInfo>>();
+
+        public TData LoadData<TData>(string userId, string key)
+            where TData : class
+        {
+            var dictKey = userId + "." + key;
+            if (!_data.ContainsKey(dictKey))
+                return null;
+
+            var json = _data[dictKey];
+            TData data = LitJson.JsonMapper.ToObject<TData>(json);
+            return data;
+        }
 
         public IEnumerable<LocalDataChunkInfo> LoadDataChunksJson(string userId)
         {
@@ -19,6 +32,11 @@ namespace RData.Tests.Mock
                 return Enumerable.Empty<LocalDataChunkInfo>();
 
             return _dataChunks[userId].Values.OrderBy(v => v.requestCreatedAt);
+        }
+
+        public void RemoveData(string userId, string key)
+        {
+            _data.Remove(userId + "." + key);
         }
 
         public void RemoveDataChunk(string userId, string requestId)
@@ -30,6 +48,12 @@ namespace RData.Tests.Mock
                 throw new RDataException("requestId not found in the data chunks list");
 
             _dataChunks[userId].Remove(requestId);
+        }
+
+        public void SaveData<TData>(string userId, string key, TData data)
+        {
+            var json = LitJson.JsonMapper.ToJson(data);
+            _data[userId + "." + key] = json;
         }
 
         public void SaveDataChunk(string userId, BulkRequest dataChunk)

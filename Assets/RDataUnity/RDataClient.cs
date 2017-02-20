@@ -10,6 +10,7 @@ using RData.Requests;
 using RData.Responses;
 using RData.Exceptions;
 using RData.Contexts;
+using RData.Contexts.Authentication;
 using RData.Events;
 using RData.Requests.System;
 
@@ -36,6 +37,8 @@ namespace RData
 
         private BulkRequest _activeChunk = new BulkRequest();
 
+        private AuthenticationContext _authenticationContext; // This is the root of our context tree
+
         public RDataClient()
         {
             JsonRpcClient = new JsonRpcClient();
@@ -52,6 +55,7 @@ namespace RData
         public IEnumerator Close()
         {
             yield return CoroutineManager.StartCoroutine(JsonRpcClient.Close());
+            EndAuthenticationContext();
         }
 
         public void CloseImmidiately()
@@ -80,6 +84,20 @@ namespace RData
         {
             // Restore interrupted contexts
             RestoreInterruptedContexts();
+        }
+
+        private void StartAuthenticationContext()
+        {
+            _authenticationContext = new AuthenticationContext();
+            StartRootContext(_authenticationContext);
+            LocalDataRepository.SaveData(UserId, typeof(AuthenticationContext).Name, _authenticationContext);
+        }
+
+        private void EndAuthenticationContext()
+        {
+            EndContext(_authenticationContext);
+            _authenticationContext = null;
+            LocalDataRepository.RemoveData(UserId, typeof(AuthenticationContext).Name);
         }
 
         private IEnumerator ProcessBulkedRequests()
@@ -120,7 +138,20 @@ namespace RData
             LocalDataRepository.SaveDataChunk(UserId, _activeChunk);
         }
 
-        public virtual IEnumerator Authenticate(string userId, bool endInterruptedContexts = true)
+        private void RestoreInterruptedContexts()
+        {
+            RestoreContext(_authenticationContext);
+        }
+
+        private void EndInterruptedAuthenticationContext()
+        {
+            _authenticationContext = LocalDataRepository.LoadData<AuthenticationContext>(UserId, typeof(AuthenticationContext).Name); // Load previously saved authentication context
+
+            if(_authenticationContext != null)
+                EndAuthenticationContext(); // End it
+        }
+
+        public virtual IEnumerator Authenticate(string userId)
         {
             var request = new Requests.User.AuthenticateRequest(userId);
             yield return CoroutineManager.StartCoroutine(Send<Requests.User.AuthenticateRequest, BooleanResponse>(request));
@@ -132,43 +163,37 @@ namespace RData
             {
                 Authenticated = request.Response.Result;
                 UserId = userId;
-
-                if (endInterruptedContexts)
-                {
-                    // When game is started (not reconnecting), close all previously interrupted contexts (by default we assume we lost them)
-                    EndInterruptedContexts();
-                }
+                
+                EndInterruptedAuthenticationContext(); // First, load root auth context and end it properly
+                StartAuthenticationContext(); // Now, start new root context
 
                 CoroutineManager.StartCoroutine(ProcessBulkedRequests()); // Start bulk request processing
             }
         }
-
-        public void LogEvent<TEventData>(TEventData eventData, RDataBaseContext context = null)
-        {
-            var evt = new RDataEvent<TEventData>(eventData, context);
-            LogEvent(evt);
-        }
-
-        protected void LogEvent<TEventData>(RDataEvent<TEventData> evt)
+        
+        public void LogEvent<TEventData>(RDataEvent<TEventData> evt)
         {
             var request = new Requests.Events.LogEventRequest<TEventData>(evt);
             CoroutineManager.StartCoroutine(Send<Requests.Events.LogEventRequest<TEventData>, BooleanResponse>(request));
         }
 
-        protected void StartContext<TContextData>(RDataContext<TContextData> context)
+        public void StartContext<TContextData>(RDataContext<TContextData> context, RDataBaseContext parentContext = null)
+            where TContextData : class, new()
         {
+            if (parentContext == null)
+                parentContext = _authenticationContext;
+
+            parentContext.AddChild(context);
+
             var request = new Requests.Contexts.StartContextRequest<TContextData>(context);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.StartContextRequest<TContextData>, BooleanResponse>(request));
         }
 
-        public RDataContext<TContextData> StartContext<TContextData>(TContextData contextData, RDataBaseContext parentContext = null, bool persistent = false)
+        private void StartRootContext<TContextData>(RDataContext<TContextData> context)
+            where TContextData : class, new()
         {
-            var context = new RDataContext<TContextData>(contextData, parentContext, persistent);
-            if (parentContext != null)
-                parentContext.AddChild(context);
-
-            StartContext(context);
-            return context;
+            var request = new Requests.Contexts.StartContextRequest<TContextData>(context);
+            CoroutineManager.StartCoroutine(Send<Requests.Contexts.StartContextRequest<TContextData>, BooleanResponse>(request));
         }
 
         public void EndContext(RDataBaseContext context)
@@ -179,16 +204,10 @@ namespace RData
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.EndContextRequest, BooleanResponse>(request));
         }
 
-        public void RestoreInterruptedContexts()
+        public void RestoreContext(RDataBaseContext context)
         {
-            var request = new Requests.Contexts.RestoreInterruptedContextsRequest();
-            CoroutineManager.StartCoroutine(Send<Requests.Contexts.RestoreInterruptedContextsRequest, BooleanResponse>(request));
-        }
-
-        public void EndInterruptedContexts()
-        {
-            var request = new Requests.Contexts.EndInterruptedContextsRequest();
-            CoroutineManager.StartCoroutine(Send<Requests.Contexts.EndInterruptedContextsRequest, BooleanResponse>(request));
+            var request = new Requests.Contexts.RestoreContextRequest(context);
+            CoroutineManager.StartCoroutine(Send<Requests.Contexts.RestoreContextRequest, BooleanResponse>(request));
         }
     }
 }

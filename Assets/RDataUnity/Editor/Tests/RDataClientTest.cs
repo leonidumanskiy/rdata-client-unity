@@ -127,7 +127,7 @@ namespace RData.Tests
             _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true));
 
             string testData = "test data";
-            _rDataClient.LogEvent(new MockEventData(testData));
+            _rDataClient.LogEvent(new MockEvent(testData));
 
             Assert.AreEqual(_localDataRepository.LoadDataChunksJson(TestUserId).Count(), 0, "Local repository still has items in it");
         }
