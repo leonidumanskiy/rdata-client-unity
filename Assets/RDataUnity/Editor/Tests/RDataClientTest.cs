@@ -13,17 +13,20 @@ using System.Linq;
 namespace RData.Tests
 {
     [TestFixture]
-    public class RDataClientTest : MonoBehaviourExtended
+    public class RDataClientTest
     {
         const string TestUserId = "testUserId";
 
         private MockJsonRpcClient _jsonRpcClient;
         private MockDataRepository _localDataRepository;
         private RDataClient _rDataClient;
+        private CoroutineManager _coroutineManager;
 
         [SetUp]
         public void TestInit()
         {
+            _coroutineManager = new GameObject("Test_CoroutineManager", typeof(CoroutineManager)).GetComponent<CoroutineManager>();
+
             _jsonRpcClient = new MockJsonRpcClient();
             _localDataRepository = new MockDataRepository();
             _rDataClient = new RDataClient();
@@ -36,23 +39,24 @@ namespace RData.Tests
         [TearDown]
         public void TestEnd()
         {
+            GameObject.DestroyImmediate(_coroutineManager);
             _rDataClient.Close();
             _rDataClient = null;
             _jsonRpcClient = null;
         }
-       
+
         IEnumerator Authenticate() // Fixture function for authenticating before testing
         {
             _jsonRpcClient.ExpectRequestWithMethod(new AuthenticateRequest().Method, new BooleanResponse(true));
-            yield return StartCoroutine(_rDataClient.Authenticate(TestUserId));
+            yield return CoroutineManager.StartCoroutine(_rDataClient.Authenticate(TestUserId));
             Assert.IsTrue(_rDataClient.Authenticated, "User authentication failed");
         }
-         
+
         /*
         [Test]
         public void TestTime()
         {
-            TestCoroutine(CountTime());
+            _coroutineManager.TestCoroutine(CountTime());
         }
 
         public IEnumerator CountTime()
@@ -68,7 +72,7 @@ namespace RData.Tests
         [Test]
         public void TestMockRequest()
         {
-            TestCoroutine(TestMockRequestCoro());
+            _coroutineManager.TestCoroutine(TestMockRequestCoro());
         }
 
         public IEnumerator TestMockRequestCoro()
@@ -78,14 +82,14 @@ namespace RData.Tests
             var expectedResponse = new BooleanResponse(true);
 
             _jsonRpcClient.ExpectRequestWithId(request.Id, expectedResponse);
-            yield return StartCoroutine(_rDataClient.Send<MockRequest, BooleanResponse>(request));
+            yield return CoroutineManager.StartCoroutine(_rDataClient.Send<MockRequest, BooleanResponse>(request));
             Assert.AreEqual(request.Response.Result, expectedResponse.Result, "Request results don't match");
         }
 
         [Test]
         public void TestAuthenticationRequest()
         {
-            TestCoroutine(TestAuthenticationRequestCoro());
+            _coroutineManager.TestCoroutine(TestAuthenticationRequestCoro());
         }
 
         public IEnumerator TestAuthenticationRequestCoro()
@@ -94,14 +98,14 @@ namespace RData.Tests
             var expectedResponse = new BooleanResponse(true);
 
             _jsonRpcClient.ExpectRequestWithId(request.Id, expectedResponse);
-            yield return StartCoroutine(_rDataClient.Send<AuthenticateRequest, BooleanResponse>(request));
+            yield return CoroutineManager.StartCoroutine(_rDataClient.Send<AuthenticateRequest, BooleanResponse>(request));
             Assert.AreEqual(request.Response.Result, expectedResponse.Result, "Request returned false");
         }
 
         [Test]
         public void TestAuthentication()
         {
-            TestCoroutine(TestAuthenticationCoro());
+            _coroutineManager.TestCoroutine(TestAuthenticationCoro());
         }
 
         public IEnumerator TestAuthenticationCoro()
@@ -109,7 +113,7 @@ namespace RData.Tests
             var expectedResponse = new BooleanResponse(true);
 
             _jsonRpcClient.ExpectRequestWithMethod(new AuthenticateRequest().Method, expectedResponse);
-            yield return StartCoroutine(_rDataClient.Authenticate(TestUserId));
+            yield return CoroutineManager.StartCoroutine(_rDataClient.Authenticate(TestUserId));
 
             Assert.IsTrue(_rDataClient.Authenticated, "Client is not authenticated");
         }
@@ -117,12 +121,12 @@ namespace RData.Tests
         [Test]
         public void TestLogEvent()
         {
-            TestCoroutine(TestLogEventCoro());
+            _coroutineManager.TestCoroutine(TestLogEventCoro());
         }
 
         public IEnumerator TestLogEventCoro()
         {
-            yield return StartCoroutine(Authenticate());
+            yield return CoroutineManager.StartCoroutine(Authenticate());
 
             _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true));
 

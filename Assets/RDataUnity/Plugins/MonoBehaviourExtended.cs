@@ -60,8 +60,8 @@ public class MonoBehaviourExtended : MonoBehaviour
 #if UNITY_EDITOR
     public void TestCoroutine(IEnumerator routine)
     {
-        StartEditorCoroutine(routine);
-        while (_activeRoutines.Count > 0)
+        var testingCoroutine = StartEditorCoroutine(routine);
+        while (_activeRoutines.Contains(testingCoroutine))
         {
             for (int i = 0; i < _activeRoutines.Count; i++)
             {
