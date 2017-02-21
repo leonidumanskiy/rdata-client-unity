@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using RData.JsonRpc;
 using RData.Responses;
 using RData.Events;
+using LitJson;
 
 namespace RData.Requests.System
 {
     public class BulkRequest : JsonRpcRequest<BulkRequest.Parameters, BooleanResponse>
     {
+        [JsonAlias("method")]
         public override string Method
         {
             get { return "bulkRequest"; }

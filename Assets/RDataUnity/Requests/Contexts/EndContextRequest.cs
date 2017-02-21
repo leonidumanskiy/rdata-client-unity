@@ -2,11 +2,13 @@
 using RData.Responses;
 using RData.Events;
 using RData.Contexts;
+using LitJson;
 
 namespace RData.Requests.Contexts
 {
     public class EndContextRequest : JsonRpcRequest<EndContextRequest.Parameters, BooleanResponse>
     {
+        [JsonAlias("method")]
         public override string Method
         {
             get { return "endContext"; }

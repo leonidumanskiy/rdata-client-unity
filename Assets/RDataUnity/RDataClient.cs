@@ -18,11 +18,11 @@ namespace RData
 {
     public class RDataClient
     {
-        private const double ChunkLifeTime = 10d; // Seconds
-
         public IJsonRpcClient JsonRpcClient { get; set; }
 
         public ILocalDataRepository LocalDataRepository { get; set; }
+
+        public double ChunkLifeTime { get; set; }
 
         public JsonRpcError<string> LastError { get; private set; }
 
@@ -43,6 +43,7 @@ namespace RData
         {
             JsonRpcClient = new JsonRpcClient();
             JsonRpcClient.OnReconnected += OnReconnected;
+            ChunkLifeTime = 10d;
 
             LocalDataRepository = new LocalDataRepository();
         }

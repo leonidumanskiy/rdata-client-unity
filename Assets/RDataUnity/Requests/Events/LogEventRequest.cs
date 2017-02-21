@@ -1,11 +1,13 @@
 ﻿using RData.JsonRpc;
 using RData.Responses;
 using RData.Events;
+using LitJson;
 
 namespace RData.Requests.Events
 {
     public class LogEventRequest<TEventData> : JsonRpcRequest<LogEventRequest<TEventData>.Parameters, BooleanResponse>
     {
+        [JsonAlias("method")]
         public override string Method
         {
             get { return "logEvent"; }

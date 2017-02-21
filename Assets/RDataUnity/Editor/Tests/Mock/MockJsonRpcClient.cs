@@ -12,10 +12,21 @@ public class MockJsonRpcClient : IJsonRpcClient
 
     public bool IsAvailable { get; private set; }
 
-    private Dictionary<string, JsonRpcBaseResponse> _expectedRequestIds = new Dictionary<string, JsonRpcBaseResponse>();
-    private Dictionary<string, JsonRpcBaseResponse> _expectedRequestMethods = new Dictionary<string, JsonRpcBaseResponse>();
+    public class ExpectedResponse
+    {
+        public JsonRpcBaseResponse response;
+        public bool autoRemove = true; 
+    }
+
+    private Dictionary<string, ExpectedResponse> _expectedRequestIds = new Dictionary<string, ExpectedResponse>();
+    private Dictionary<string, ExpectedResponse> _expectedRequestMethods = new Dictionary<string, ExpectedResponse>();
 
     public event Action OnReconnected;
+
+    public int NumExpectedRequests
+    {
+        get { return _expectedRequestIds.Count + _expectedRequestMethods.Count; }
+    }
 
     public IEnumerator Open(string hostName, bool waitUntilConnected = true, double waitTimeout = 1d)
     {
@@ -40,13 +51,20 @@ public class MockJsonRpcClient : IJsonRpcClient
     {
         if (_expectedRequestIds.ContainsKey(request.Id))
         {
-            request.SetResponse(_expectedRequestIds[request.Id]);
+            var expectation = _expectedRequestIds[request.Id];
+            request.SetResponse(expectation.response);
+            if (expectation.autoRemove)
+                _expectedRequestIds.Remove(request.Id);
+
             yield break;
         }
 
         else if (_expectedRequestMethods.ContainsKey(request.Method))
         {
-            request.SetResponse(_expectedRequestMethods[request.Method]);
+            var expectation = _expectedRequestMethods[request.Method];
+            request.SetResponse(expectation.response);
+            if (expectation.autoRemove)
+                _expectedRequestMethods.Remove(request.Method);
             yield break;
         }
         else
@@ -57,9 +75,30 @@ public class MockJsonRpcClient : IJsonRpcClient
 
     public IEnumerator SendJson<TResponse>(string message, string requestId, Action<TResponse> onResponse) where TResponse : JsonRpcBaseResponse
     {
-        Assert.IsTrue(_expectedRequestIds.ContainsKey(requestId));
-        if (onResponse != null)
-            onResponse((TResponse)_expectedRequestIds[requestId]);
+        var request = LitJson.JsonMapper.ToObject<JsonRpcBaseRequest>(message);
+        if(_expectedRequestIds.ContainsKey(requestId))
+        {
+            var expectation = _expectedRequestIds[requestId];
+            if (expectation.autoRemove)
+                _expectedRequestIds.Remove(requestId);
+
+            if (onResponse != null)
+                onResponse((TResponse)expectation.response);
+
+        }
+        else if (_expectedRequestMethods.ContainsKey(request.Method))
+        {
+            var expectation = _expectedRequestMethods[request.Method];
+            if (expectation.autoRemove)
+                _expectedRequestMethods.Remove(request.Method);
+
+            if(onResponse != null)
+                onResponse((TResponse)expectation.response);
+        }
+        else
+        {
+            throw new Exception("Unexpected json request");
+        }
 
         yield return null;
     }
@@ -67,18 +106,17 @@ public class MockJsonRpcClient : IJsonRpcClient
     public void ExpectRequestWithId<TResponse>(string requestId, TResponse response)
         where TResponse : JsonRpcBaseResponse
     {
-        _expectedRequestIds[requestId] = response;
+        _expectedRequestIds[requestId] = new ExpectedResponse() { response = response };
     }
 
     public void ExpectRequestWithMethod<TResponse>(string command, TResponse response)
         where TResponse : JsonRpcBaseResponse
     {
-        _expectedRequestMethods[command] = response;
+        _expectedRequestMethods[command] = new ExpectedResponse() { response = response };
     }
 
     public void TemporaryDisconnect()
     {
         OnReconnected();
     }
-
 }

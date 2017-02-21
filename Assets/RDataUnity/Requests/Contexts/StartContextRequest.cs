@@ -2,12 +2,14 @@
 using RData.Responses;
 using RData.Events;
 using RData.Contexts;
+using LitJson;
 
 namespace RData.Requests.Contexts
 {
     public class StartContextRequest<TContextData> : JsonRpcRequest<StartContextRequest<TContextData>.Parameters, BooleanResponse>
         where TContextData : class, new()
     {
+        [JsonAlias("method")]
         public override string Method
         {
             get { return "startContext"; }

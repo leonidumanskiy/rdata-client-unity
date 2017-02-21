@@ -3,11 +3,13 @@ using RData.Responses;
 using RData.Events;
 using RData.Contexts;
 using System;
+using LitJson;
 
 namespace RData.Requests.Contexts
 {
     public class RestoreContextRequest : JsonRpcRequest<RestoreContextRequest.Parameters, BooleanResponse>
     {
+        [JsonAlias("method")]
         public override string Method
         {
             get { return "restoreContext"; }
@@ -20,10 +22,10 @@ namespace RData.Requests.Contexts
 
         public class Parameters
         {
-            [LitJson.JsonAlias("id")]
+            [JsonAlias("id")]
             public string Id { get; set; }
 
-            [LitJson.JsonAlias("timeRestored")]
+            [JsonAlias("timeRestored")]
             public long TimeRestored { get; set; }
         }
 
