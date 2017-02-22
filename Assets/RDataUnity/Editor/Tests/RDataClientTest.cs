@@ -160,5 +160,41 @@ namespace RData.Tests
             Assert.AreEqual(_jsonRpcClient.NumExpectedRequests, 0, "Expected request was never sent by mock json rpc client");
             Assert.AreEqual(_localDataRepository.LoadDataChunksJson(TestUserId).Count(), 0, "Local repository still has items in it");
         }
+        
+
+        [Test]
+        public void TestEndContext()
+        {
+            _coroutineManager.TestCoroutine(TestEndContextCoro());
+        }
+
+        public IEnumerator TestEndContextCoro()
+        {
+            yield return CoroutineManager.StartCoroutine(Authenticate());
+
+            // Start Context
+            _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true));
+
+            string testData = "test data";
+            MockContext context = new MockContext(testData);
+            _rDataClient.StartContext(context);
+
+            while (_jsonRpcClient.NumExpectedRequests > 0 && _testStopWatch.Elapsed < TimeSpan.FromSeconds(TestTimeout))
+                yield return null;
+
+            Assert.AreEqual(_jsonRpcClient.NumExpectedRequests, 0, "Expected request was never sent by mock json rpc client");
+            Assert.AreEqual(_localDataRepository.LoadDataChunksJson(TestUserId).Count(), 0, "Local repository still has items in it");
+
+            // End context
+            _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true));
+            
+            _rDataClient.EndContext(context);
+
+            while (_jsonRpcClient.NumExpectedRequests > 0 && _testStopWatch.Elapsed < TimeSpan.FromSeconds(TestTimeout))
+                yield return null;
+
+            Assert.AreEqual(_jsonRpcClient.NumExpectedRequests, 0, "Expected request was never sent by mock json rpc client");
+            Assert.AreEqual(_localDataRepository.LoadDataChunksJson(TestUserId).Count(), 0, "Local repository still has items in it");
+        }
     }
 }
