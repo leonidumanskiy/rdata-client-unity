@@ -5,7 +5,7 @@ using RData.Responses;
 
 namespace RData.Tests.Mock
 {
-    public class MockRequest: JsonRpcRequest<MockRequest.Parameters, BooleanResponse>
+    public class MockRequest : JsonRpcRequest<MockRequest.Parameters, BooleanResponse>
     {
         public override string Method
         {

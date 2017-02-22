@@ -15,7 +15,7 @@ public class MockJsonRpcClient : IJsonRpcClient
     public class ExpectedResponse
     {
         public JsonRpcBaseResponse response;
-        public bool autoRemove = true; 
+        public bool autoRemove = true;
     }
 
     private Dictionary<string, ExpectedResponse> _expectedRequestIds = new Dictionary<string, ExpectedResponse>();
@@ -76,7 +76,7 @@ public class MockJsonRpcClient : IJsonRpcClient
     public IEnumerator SendJson<TResponse>(string message, string requestId, Action<TResponse> onResponse) where TResponse : JsonRpcBaseResponse
     {
         var request = LitJson.JsonMapper.ToObject<JsonRpcBaseRequest>(message);
-        if(_expectedRequestIds.ContainsKey(requestId))
+        if (_expectedRequestIds.ContainsKey(requestId))
         {
             var expectation = _expectedRequestIds[requestId];
             if (expectation.autoRemove)
@@ -92,7 +92,7 @@ public class MockJsonRpcClient : IJsonRpcClient
             if (expectation.autoRemove)
                 _expectedRequestMethods.Remove(request.Method);
 
-            if(onResponse != null)
+            if (onResponse != null)
                 onResponse((TResponse)expectation.response);
         }
         else

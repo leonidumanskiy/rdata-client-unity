@@ -14,20 +14,20 @@ namespace RData.JsonRpc
         private WebSocket _webSocket;
 
         private Dictionary<string, string> _responses = new Dictionary<string, string>();
-        
+
         private float _reconnectTimeout = 5;
 
         private bool _closed = false;
 
         private volatile bool _lostConnection = false;
-        
+
         public event Action OnReconnected;
 
         public bool IsAvailable
         {
             get { return _webSocket != null && _webSocket.IsAlive; }
         }
-        
+
         public IEnumerator Open(string hostName, bool waitUntilConnected = true, double waitTimeout = 3d)
         {
             _hostName = hostName;
@@ -63,7 +63,7 @@ namespace RData.JsonRpc
                     if (_closed)
                         yield break;
 
-                    if(_lostConnection)
+                    if (_lostConnection)
                     {
                         Debug.Log("Must reconnect. Reconnecting...");
                         _webSocket.ConnectAsync();
@@ -100,7 +100,7 @@ namespace RData.JsonRpc
                 yield return null;
             }
         }
-        
+
         public void CloseImmidiately()
         {
             _closed = true;
@@ -123,7 +123,7 @@ namespace RData.JsonRpc
             {
                 lock (_responses)
                 {
-                    if(_responses.ContainsKey(id))
+                    if (_responses.ContainsKey(id))
                     {
                         var responseJson = _responses[id];
                         request.SetResponse(LitJson.JsonMapper.ToObject<TResponse>(responseJson));
@@ -134,7 +134,7 @@ namespace RData.JsonRpc
                 yield return null;
             }
         }
-        
+
         public IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
             where TResponse : JsonRpcBaseResponse
         {
@@ -161,7 +161,7 @@ namespace RData.JsonRpc
                 yield return null;
             }
         }
-        
+
         private void OnWebsocketConnected(object sender, EventArgs e)
         {
             Debug.Log("Websocket connected");

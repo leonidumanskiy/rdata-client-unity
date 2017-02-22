@@ -56,6 +56,7 @@ namespace RData.Tests
         IEnumerator Authenticate() // Fixture function for authenticating before testing
         {
             _jsonRpcClient.ExpectRequestWithMethod(new AuthenticateRequest().Method, new BooleanResponse(true));
+            _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true)); // Authentication context
             yield return CoroutineManager.StartCoroutine(_rDataClient.Authenticate(TestUserId));
             Assert.IsTrue(_rDataClient.Authenticated, "User authentication failed");
         }
@@ -113,23 +114,7 @@ namespace RData.Tests
             yield return CoroutineManager.StartCoroutine(_rDataClient.Send<AuthenticateRequest, BooleanResponse>(request));
             Assert.AreEqual(request.Response.Result, expectedResponse.Result, "Request returned false");
         }
-
-        [Test]
-        public void TestAuthentication()
-        {
-            _coroutineManager.TestCoroutine(TestAuthenticationCoro());
-        }
-
-        public IEnumerator TestAuthenticationCoro()
-        {
-            var expectedResponse = new BooleanResponse(true);
-
-            _jsonRpcClient.ExpectRequestWithMethod(new AuthenticateRequest().Method, expectedResponse);
-            yield return CoroutineManager.StartCoroutine(_rDataClient.Authenticate(TestUserId));
-
-            Assert.IsTrue(_rDataClient.Authenticated, "Client is not authenticated");
-        }
-
+        
         [Test]
         public void TestLogEvent()
         {

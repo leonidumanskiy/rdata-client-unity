@@ -11,9 +11,9 @@ namespace RData.Tests.Mock
         {
             public string TestData;
         }
-        
+
         public MockEvent(string testData)
-            : base(new MockEventData() { TestData = testData } )
+            : base(new MockEventData() { TestData = testData })
         {
         }
     }
