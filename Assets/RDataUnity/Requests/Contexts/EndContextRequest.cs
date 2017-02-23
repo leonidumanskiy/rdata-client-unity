@@ -14,6 +14,7 @@ namespace RData.Requests.Contexts
             get { return "endContext"; }
         }
 
+        [JsonIgnore]
         public override bool IsBulked
         {
             get { return true; }

@@ -13,6 +13,7 @@ namespace RData.Requests.Events
             get { return "logEvent"; }
         }
 
+        [JsonIgnore]
         public override bool IsBulked
         {
             get { return true; }

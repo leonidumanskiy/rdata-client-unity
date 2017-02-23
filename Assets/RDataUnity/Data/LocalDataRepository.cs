@@ -10,11 +10,10 @@ using System;
 namespace RData.Data
 {
     public class LocalDataRepository : ILocalDataRepository
-    {
+    {   
         private const string RDataDir = "rdata";
         private const string DataDir = "data";
         private const string ChunksDir = "chunks";
-        private const char ChunkNameDelimeter = '_';
 
         private string RDataDirectoryPath
         {
@@ -38,7 +37,7 @@ namespace RData.Data
 
         private string GetChunkFilePath(string userId, BulkRequest request)
         {
-            return Path.Combine(GetChunksDirectory(userId), string.Format("{0}{1}{2}", request.CreatedAt, ChunkNameDelimeter, request.Id));
+            return Path.Combine(GetChunksDirectory(userId), request.Id);
         }
 
         private string GetChunkFilePath(string userId, string requestId)
@@ -66,7 +65,7 @@ namespace RData.Data
 
             List<LocalDataChunkInfo> result = new List<LocalDataChunkInfo>();
             
-            var info = new DirectoryInfo(ChunksDir);
+            var info = new DirectoryInfo(GetChunksDirectory(userId));
             var filesInfo = info.GetFiles();
             foreach (var file in filesInfo)
             {

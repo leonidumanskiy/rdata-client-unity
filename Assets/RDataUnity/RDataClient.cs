@@ -117,10 +117,10 @@ namespace RData
                         }));
                     }
 
-                    // Check if the current chunk has expired, if so, save and refresh it
-                    if (DateTime.UtcNow > Tools.Time.UnixTimeToDateTime(_activeChunk.CreatedAt) + TimeSpan.FromSeconds(ChunkLifeTime))
+                    // Check if the current chunk has items and expired. If so, save and refresh it
+                    if (_activeChunk.Length > 0 && DateTime.UtcNow > Tools.Time.UnixTimeToDateTime(_activeChunk.CreatedAt) + TimeSpan.FromSeconds(ChunkLifeTime))
                     {
-                        SaveActiveChunk();
+                        ResetActiveChunk();
                     }
                 }
 

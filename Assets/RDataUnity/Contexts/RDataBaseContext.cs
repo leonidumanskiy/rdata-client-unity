@@ -7,9 +7,7 @@ namespace RData.Contexts
         public string Id { get; set; }
 
         public string Name { get; set; }
-
-        public bool Persistent { get; set; }
-
+        
         public string ParentContextId { get; set; }
 
         public List<RDataBaseContext> Children { get; set; }

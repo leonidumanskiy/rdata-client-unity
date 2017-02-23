@@ -15,6 +15,7 @@ namespace RData.Requests.Contexts
             get { return "startContext"; }
         }
 
+        [JsonIgnore]
         public override bool IsBulked
         {
             get { return true; }
@@ -27,10 +28,7 @@ namespace RData.Requests.Contexts
 
             [LitJson.JsonAlias("name")]
             public string Name { get; set; }
-
-            [LitJson.JsonAlias("persistent")]
-            public bool Persistent { get; set; }
-
+            
             [LitJson.JsonAlias("parentContextId")]
             public string ParentContextId { get; set; }
 
@@ -49,7 +47,6 @@ namespace RData.Requests.Contexts
             {
                 Id = context.Id,
                 Name = context.Name,
-                Persistent = context.Persistent,
                 ParentContextId = context.ParentContextId,
                 Data = context.Data,
                 TimeStarted = Tools.Time.DateTimeToUnixTime(context.TimeStarted)

@@ -15,6 +15,7 @@ namespace RData.Requests.System
             get { return "bulkRequest"; }
         }
 
+        [JsonIgnore]
         public override bool IsBulked
         {
             get { return false; }

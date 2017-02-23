@@ -111,8 +111,10 @@ namespace RData.JsonRpc
             where TRequest : JsonRpcBaseRequest
             where TResponse : JsonRpcBaseResponse
         {
+
             string id = request.Id;
             string message = LitJson.JsonMapper.ToJson(request);
+            Debug.Log("RData Send: " + message);
             lock (_responses)
             {
                 _responses.Add(id, null);
@@ -123,11 +125,22 @@ namespace RData.JsonRpc
             {
                 lock (_responses)
                 {
-                    if (_responses.ContainsKey(id))
+                    if (_responses.ContainsKey(id) && _responses[id] != null)
                     {
                         var responseJson = _responses[id];
-                        request.SetResponse(LitJson.JsonMapper.ToObject<TResponse>(responseJson));
                         _responses.Remove(id);
+                        TResponse responseObject = null;
+                        try
+                        {
+                            responseObject = LitJson.JsonMapper.ToObject<TResponse>(responseJson);
+                        } catch (Exception e)
+                        {
+                            throw new Exceptions.RDataException("Failed to deserialize json into " + typeof(TResponse).Name + ": " + responseJson, e);
+                        }
+
+                        if(responseObject != null)
+                            request.SetResponse(responseObject);
+
                         yield break;
                     }
                 }
@@ -138,6 +151,8 @@ namespace RData.JsonRpc
         public IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
             where TResponse : JsonRpcBaseResponse
         {
+            Debug.Log("RData Send: " + message);
+
             lock (_responses)
             {
                 _responses.Add(id, null);
@@ -148,13 +163,24 @@ namespace RData.JsonRpc
             {
                 lock (_responses)
                 {
-                    if (_responses.ContainsKey(id))
+                    if (_responses.ContainsKey(id) && _responses[id] != null)
                     {
                         var responseJson = _responses[id];
                         _responses.Remove(id);
                         if (onResponse != null)
-                            onResponse(LitJson.JsonMapper.ToObject<TResponse>(responseJson));
+                        {
+                            TResponse responseObject = null;
+                            try
+                            {
+                                responseObject = LitJson.JsonMapper.ToObject<TResponse>(responseJson);
+                            } catch(Exception e)
+                            {
+                                throw new Exceptions.RDataException("Failed to deserialize json into " + typeof(TResponse).Name + ": " + responseJson, e);
+                            }
 
+                            if(responseObject != null)
+                                onResponse(responseObject);
+                        }
                         yield break;
                     }
                 }
@@ -180,11 +206,14 @@ namespace RData.JsonRpc
 
         private void OnWebsocketMessage(object sender, MessageEventArgs e)
         {
+            Debug.Log("RData Recv: " + e.Data);
+
             var response = LitJson.JsonMapper.ToObject<JsonRpcBaseResponse>(e.Data);
             lock (_responses)
             {
                 if (!_responses.ContainsKey(response.Id))
-                    throw new JsonRpcException("Response with that id wasn't expected");
+                    //throw new JsonRpcException("Response with that id wasn't expected");
+                    Debug.Log("Response with that id wasn't expected");
 
                 _responses[response.Id] = e.Data;
             }

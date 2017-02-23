@@ -12,11 +12,10 @@ namespace RData.Contexts
     {
         public TContextData Data { get; set; }
 
-        public RDataContext(string id, string name, string parentContextId, bool persistent, TContextData data, RDataContextStatus status, System.DateTime timeStarted, System.DateTime timeEnded)
+        public RDataContext(string id, string name, string parentContextId, TContextData data, RDataContextStatus status, System.DateTime timeStarted, System.DateTime timeEnded)
         {
             Id = id;
             Name = name;
-            Persistent = persistent;
             ParentContextId = parentContextId;
             Data = data;
 
@@ -27,8 +26,8 @@ namespace RData.Contexts
             Children = new List<RDataBaseContext>();
         }
 
-        public RDataContext(TContextData data, RDataBaseContext parentContext = null, bool persistent = false) :
-            this(System.Guid.NewGuid().ToString(), typeof(TContextData).Name, (parentContext != null ? parentContext.Id : null), persistent, data, RDataContextStatus.Started, System.DateTime.UtcNow, default(System.DateTime))
+        public RDataContext(TContextData data, RDataBaseContext parentContext = null) :
+            this(System.Guid.NewGuid().ToString(), typeof(TContextData).Name, (parentContext != null ? parentContext.Id : null), data, RDataContextStatus.Started, System.DateTime.UtcNow, default(System.DateTime))
         {
         }
 
@@ -56,6 +55,7 @@ namespace RData.Contexts
         public override void AddChild(RDataBaseContext context)
         {
             Children.Add(context);
+            context.ParentContextId = Id;
         }
     }
 }

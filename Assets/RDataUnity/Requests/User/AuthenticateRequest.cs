@@ -12,15 +12,16 @@ namespace RData.Requests.User
             get { return "authenticate"; }
         }
 
+        [JsonIgnore]
+        public override bool IsBulked
+        {
+            get { return false; }
+        }
+
         public class Parameters
         {
             [LitJson.JsonAlias("userId")]
             public string UserId { get; set; }
-        }
-
-        public override bool IsBulked
-        {
-            get { return false; }
         }
 
         public AuthenticateRequest() : base() { }
