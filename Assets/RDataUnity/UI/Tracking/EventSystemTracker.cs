@@ -61,7 +61,7 @@ namespace RData.Ui.Tracking
                 var selectedGameObject = result.gameObject;
                 var tracker = selectedGameObject.GetComponent<RectTransformTracker>();
                 if (tracker == null)
-                    continue;
+                    continue; // Continue searching for the RectTransformTracker
 
                 Vector2 relativePosition;
                 bool isHit = RectTransformHelper.ScreenPointToLocalPointInRectangleRelative(tracker.RectTransform, screenPoint, null, out relativePosition); // TODO: Provide camera for another types of canvas modes
@@ -72,6 +72,8 @@ namespace RData.Ui.Tracking
                 Debug.Log("Clicked on " + tracker.gameObject.name + ", GameObjectGuid = " + tracker.GameObjectGuid + "; tracker.Context.Id = " + tracker.Context.Id + "; position.x = " + relativePosition.x + "; position.y = " + relativePosition.y);
                 var evt = new UiClickEvent(tracker.GameObjectGuid, relativePosition.x, relativePosition.y, isTouch, tracker.Context);
                 RDataSingleton.Client.LogEvent(evt);
+
+                break; // Found first RectTransformTracker, break.
             }
         }
     }
