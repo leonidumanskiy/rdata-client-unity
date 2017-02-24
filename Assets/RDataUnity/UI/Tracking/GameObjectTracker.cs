@@ -16,9 +16,9 @@ namespace RData.Ui.Tracking
     [ExecuteInEditMode]
     public class GameObjectTracker : MonoBehaviour
     {
-        [SerializeField]
+        [SerializeField][HideInInspector]
         private string _gameObjectGuid;
-
+        
         private GameObjectTracker _parentTracker;
 
         private GameObjectActiveContext _context;
@@ -40,7 +40,7 @@ namespace RData.Ui.Tracking
                 EnsureGuid();
         }
 
-        private void Awake()
+        protected virtual void Awake()
         {
             // Editor
             if (!Application.isPlaying)

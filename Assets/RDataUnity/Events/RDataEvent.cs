@@ -14,11 +14,8 @@ namespace RData.Events
             Data = data;
         }
 
-        public RDataEvent(TEventData data) : this(System.Guid.NewGuid().ToString(), typeof(TEventData).Name, System.DateTime.UtcNow, data)
-        {
-        }
-        
-        public RDataEvent(TEventData data, RDataBaseContext context) : this(System.Guid.NewGuid().ToString(), typeof(TEventData).Name, System.DateTime.UtcNow, data, (context != null ? context.Id : null))
+        public RDataEvent(TEventData data, RDataBaseContext context = null) 
+            : this(System.Guid.NewGuid().ToString(), typeof(TEventData).Name, System.DateTime.UtcNow, data, (context != null ? context.Id : null))
         {
         }
     }

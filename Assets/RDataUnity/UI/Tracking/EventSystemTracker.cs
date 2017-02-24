@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using RData.Ui.Events;
+using RData.Tools;
 
 namespace RData.Ui.Tracking
 {
@@ -21,31 +23,35 @@ namespace RData.Ui.Tracking
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0))
-                RegisterClick(0, new Vector2(Input.mousePosition.x, Input.mousePosition.y));
-
-            if (Input.GetMouseButtonDown(1))
-                RegisterClick(1, new Vector2(Input.mousePosition.x, Input.mousePosition.y));
-
-            if (Input.GetMouseButtonDown(2))
-                RegisterClick(2, new Vector2(Input.mousePosition.x, Input.mousePosition.y));
-
-
-            for (int i = 0; i < Input.touchCount; ++i)
+            if (Input.touchSupported)
             {
-                var touch = Input.GetTouch(i);
-                if (touch.phase == TouchPhase.Began)
-                    RegisterClick(i, touch.position, true);
+                for (int i = 0; i < Input.touchCount; ++i)
+                {
+                    var touch = Input.GetTouch(i);
+                    if (touch.phase == TouchPhase.Began)
+                        RegisterClick(touch.position, i, true);
+                }
+            }
+            else
+            {
+                if (Input.GetMouseButtonDown(0))
+                    RegisterClick(new Vector2(Input.mousePosition.x, Input.mousePosition.y), 0);
+
+                if (Input.GetMouseButtonDown(1))
+                    RegisterClick(new Vector2(Input.mousePosition.x, Input.mousePosition.y), 1);
+
+                if (Input.GetMouseButtonDown(2))
+                    RegisterClick(new Vector2(Input.mousePosition.x, Input.mousePosition.y), 2);
             }
         }
 
-        private void RegisterClick(int button, Vector2 position, bool isTouch = false)
+        private void RegisterClick(Vector2 screenPoint, int button, bool isTouch = false)
         {
-            //if (!_rdataClient.Authenticated)
-            //    return;
+            if (!_rdataClient.Authenticated)
+                return;
 
             PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
-            eventDataCurrentPosition.position = position;
+            eventDataCurrentPosition.position = screenPoint;
 
             List<RaycastResult> results = new List<RaycastResult>();
             EventSystem.current.RaycastAll(eventDataCurrentPosition, results);
@@ -53,11 +59,19 @@ namespace RData.Ui.Tracking
             foreach (var result in results)
             {
                 var selectedGameObject = result.gameObject;
-                var tracker = selectedGameObject.GetComponent<GameObjectTracker>();
+                var tracker = selectedGameObject.GetComponent<RectTransformTracker>();
                 if (tracker == null)
                     continue;
 
-                Debug.Log("Clicked on " + tracker.gameObject.name + " - " + tracker.GameObjectGuid);
+                Vector2 relativePosition;
+                bool isHit = RectTransformHelper.ScreenPointToLocalPointInRectangleRelative(tracker.RectTransform, screenPoint, null, out relativePosition); // TODO: Provide camera for another types of canvas modes
+
+                if (!isHit)
+                    continue; // Redundant check, but who knows right?
+
+                Debug.Log("Clicked on " + tracker.gameObject.name + ", GameObjectGuid = " + tracker.GameObjectGuid + "; tracker.Context.Id = " + tracker.Context.Id + "; position.x = " + relativePosition.x + "; position.y = " + relativePosition.y);
+                var evt = new UiClickEvent(tracker.GameObjectGuid, relativePosition.x, relativePosition.y, isTouch, tracker.Context);
+                RDataSingleton.Client.LogEvent(evt);
             }
         }
     }

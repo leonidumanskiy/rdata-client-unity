@@ -205,6 +205,9 @@ namespace RData
         
         public void LogEvent<TEventData>(RDataEvent<TEventData> evt, bool immediately = false)
         {
+            if (!Authenticated)
+                throw new RDataException("Failed to log event " + evt.Name + ", not authenticated");
+
             var request = new Requests.Events.LogEventRequest<TEventData>(evt);
             CoroutineManager.StartCoroutine(Send<Requests.Events.LogEventRequest<TEventData>, BooleanResponse>(request, immediately));
         }
@@ -212,6 +215,9 @@ namespace RData
         public void StartContext<TContextData>(RDataContext<TContextData> context, RDataBaseContext parentContext = null, bool immediately = false)
             where TContextData : class, new()
         {
+            if (!Authenticated)
+                throw new RDataException("Failed to start context " + context.Name  + ", not authenticated");
+
             if (parentContext == null)
                 parentContext = _authenticationContext;
 
@@ -224,12 +230,18 @@ namespace RData
         private void StartRootContext<TContextData>(RDataContext<TContextData> context, bool immediately = false)
             where TContextData : class, new()
         {
+            if (!Authenticated)
+                throw new RDataException("Failed to start root context " + context.Name + ", not authenticated");
+
             var request = new Requests.Contexts.StartContextRequest<TContextData>(context);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.StartContextRequest<TContextData>, BooleanResponse>(request, immediately));
         }
 
         public void EndContext(RDataBaseContext context, bool immediately = false)
         {
+            if (!Authenticated)
+                throw new RDataException("Failed to end context " + context.Name + ", not authenticated");
+
             context.End();
 
             var request = new Requests.Contexts.EndContextRequest(context);
@@ -238,6 +250,9 @@ namespace RData
 
         public void RestoreContext(RDataBaseContext context, bool immediately = false)
         {
+            if (!Authenticated)
+                throw new RDataException("Failed to restore context " + context.Name + ", not authenticated");
+
             var request = new Requests.Contexts.RestoreContextRequest(context);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.RestoreContextRequest, BooleanResponse>(request, immediately));
         }
