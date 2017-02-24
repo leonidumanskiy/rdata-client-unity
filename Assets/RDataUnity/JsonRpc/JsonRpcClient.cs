@@ -21,6 +21,8 @@ namespace RData.JsonRpc
 
         private volatile bool _lostConnection = false;
 
+        public event Action OnLostConnection;
+
         public event Action OnReconnected;
 
         public bool IsAvailable
@@ -114,7 +116,7 @@ namespace RData.JsonRpc
 
             string id = request.Id;
             string message = LitJson.JsonMapper.ToJson(request);
-            Debug.Log("RData Send: " + message);
+            Debug.Log("<color=olive>RData Send: " + message + "</color>");
             lock (_responses)
             {
                 _responses.Add(id, null);
@@ -151,7 +153,7 @@ namespace RData.JsonRpc
         public IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
             where TResponse : JsonRpcBaseResponse
         {
-            Debug.Log("RData Send: " + message);
+            Debug.Log("<color=olive>RData Send: " + message + "</color>");
 
             lock (_responses)
             {
@@ -195,8 +197,15 @@ namespace RData.JsonRpc
 
         private void OnWebsocketDisconnected(object sender, CloseEventArgs e)
         {
+            if (_closed)
+                return;
+
             _lostConnection = true;
             Debug.Log("Websocket disconnected");
+
+            if(OnLostConnection != null)
+                OnLostConnection();
+
         }
 
         private void OnWebsocketError(object sender, ErrorEventArgs e)
@@ -206,7 +215,7 @@ namespace RData.JsonRpc
 
         private void OnWebsocketMessage(object sender, MessageEventArgs e)
         {
-            Debug.Log("RData Recv: " + e.Data);
+            Debug.Log("<color=green>RData Recv: " + e.Data + "</color>");
 
             var response = LitJson.JsonMapper.ToObject<JsonRpcBaseResponse>(e.Data);
             lock (_responses)

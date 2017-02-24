@@ -21,6 +21,7 @@ public class MockJsonRpcClient : IJsonRpcClient
     private Dictionary<string, ExpectedResponse> _expectedRequestIds = new Dictionary<string, ExpectedResponse>();
     private Dictionary<string, ExpectedResponse> _expectedRequestMethods = new Dictionary<string, ExpectedResponse>();
 
+    public event Action OnLostConnection;
     public event Action OnReconnected;
 
     public int NumExpectedRequests
@@ -117,6 +118,7 @@ public class MockJsonRpcClient : IJsonRpcClient
 
     public void TemporaryDisconnect()
     {
+        OnLostConnection();
         OnReconnected();
     }
 }

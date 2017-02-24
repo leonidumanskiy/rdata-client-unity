@@ -42,6 +42,7 @@ namespace RData
         public RDataClient()
         {
             JsonRpcClient = new JsonRpcClient();
+            JsonRpcClient.OnLostConnection += OnLostConnection;
             JsonRpcClient.OnReconnected += OnReconnected;
             ChunkLifeTime = 10d;
 
@@ -81,6 +82,11 @@ namespace RData
             }
         }
 
+        private void OnLostConnection()
+        {
+            _authenticationContext.Status = RDataContextStatus.Interrupted;
+        }
+
         private void OnReconnected()
         {
             CoroutineManager.StartCoroutine(OnReconnectedCoro());
@@ -92,7 +98,7 @@ namespace RData
             yield return CoroutineManager.StartCoroutine(SendAuthenticationRequest(UserId));
 
             // Restore interrupted contexts
-            RestoreInterruptedContexts();
+            yield return CoroutineManager.StartCoroutine(RestoreInterruptedAuthenticationContext());
         }
 
         private void StartAuthenticationContext()
@@ -113,12 +119,12 @@ namespace RData
         {
             while (true)
             {
-                if (IsAvailable && Authenticated) // When available and authenticated, try to send out chunks
+                // When available, authenticated, and root context is restored try to send out chunks
+                if (IsAvailable && Authenticated && _authenticationContext.Status != RDataContextStatus.Interrupted)
                 {
                     var localDataChunks = LocalDataRepository.LoadDataChunksJson(UserId);
                     foreach (var chunk in localDataChunks)
                     {
-                        Debug.Log("<color=green>Sending chunk with id: " + chunk.requestId + "</color>");
                         yield return CoroutineManager.StartCoroutine(JsonRpcClient.SendJson<BooleanResponse>(chunk.requestJson, chunk.requestId, (response) =>
                         {
                             if (response.Result)
@@ -151,9 +157,11 @@ namespace RData
             LocalDataRepository.SaveDataChunk(UserId, _activeChunk);
         }
 
-        private void RestoreInterruptedContexts()
+        private IEnumerator RestoreInterruptedAuthenticationContext()
         {
-            RestoreContext(_authenticationContext, true);
+            var request = new Requests.Contexts.RestoreContextRequest(_authenticationContext);
+            yield return CoroutineManager.StartCoroutine(Send<Requests.Contexts.RestoreContextRequest, BooleanResponse>(request, true));
+            _authenticationContext.Status = RDataContextStatus.Started;
         }
 
         private void EndInterruptedAuthenticationContext()
