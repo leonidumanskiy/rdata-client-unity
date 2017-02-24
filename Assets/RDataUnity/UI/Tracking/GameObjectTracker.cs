@@ -16,7 +16,7 @@ namespace RData.Ui.Tracking
     [ExecuteInEditMode]
     public class GameObjectTracker : MonoBehaviour
     {
-        [SerializeField][HideInInspector]
+        [SerializeField]
         private string _gameObjectGuid;
 
         private GameObjectTracker _parentTracker;
@@ -37,7 +37,7 @@ namespace RData.Ui.Tracking
         private void Reset()
         {
             if(!Application.isPlaying)
-                GenerateNewGuid();
+                EnsureGuid();
         }
 
         private void Awake()
@@ -45,7 +45,7 @@ namespace RData.Ui.Tracking
             // Editor
             if (!Application.isPlaying)
             {
-                GenerateNewGuid();
+                EnsureGuid();
 
             }
             else // Application.isPlaying
@@ -55,16 +55,25 @@ namespace RData.Ui.Tracking
             }
         }
 
-        private void GenerateNewGuid()
+        private void EnsureGuid()
         {
-            Debug.Log("Generating new guid for " + gameObject.name);
-
-            //  Todo: use scene-based or project-based cache
-            var trackers = FindObjectsOfType(typeof(GameObjectTracker));
-            foreach (var tracker in (GameObjectTracker[])trackers)
+            if (string.IsNullOrEmpty(_gameObjectGuid)) // If guid is null or empty, generate a new one
             {
-                if (_gameObjectGuid == tracker.GameObjectGuid)
-                    _gameObjectGuid = Guid.NewGuid().ToString();
+                Debug.Log("Generating new guid for " + gameObject.name);
+                _gameObjectGuid = Guid.NewGuid().ToString();
+            }
+            else // If Object was copied and pasted, check if it's guid does not match existing guids
+            {
+                //  Todo: use scene-based or project-based cache
+                var trackers = FindObjectsOfType(typeof(GameObjectTracker));
+                foreach (var tracker in (GameObjectTracker[])trackers)
+                {
+                    if (tracker != this && _gameObjectGuid == tracker.GameObjectGuid)
+                    {
+                        Debug.Log("Regenerating guid for " + gameObject.name);
+                        _gameObjectGuid = Guid.NewGuid().ToString();
+                    }
+                }
             }
         }
 

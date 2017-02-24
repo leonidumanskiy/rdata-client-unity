@@ -61,7 +61,7 @@ namespace RData.JsonRpc
                 while (true)
                 {
                     if (_closed)
-                        yield break;
+                        break;
 
                     if (_lostConnection)
                     {
