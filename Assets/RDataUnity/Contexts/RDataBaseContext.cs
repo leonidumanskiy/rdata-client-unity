@@ -24,5 +24,7 @@ namespace RData.Contexts
         public virtual void Restore() { }
 
         public virtual void AddChild(RDataBaseContext context) { }
+
+        public virtual IEnumerable<KeyValuePair<string, object>> GetUpdatedFields() { return null; }
     }
 }

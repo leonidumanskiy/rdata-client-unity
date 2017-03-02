@@ -42,4 +42,9 @@ public class CoroutineManager : MonoBehaviourExtended
         return ((MonoBehaviourExtended)instance).StartCoroutine(routine);
     } 
 
+    public static new void StopCoroutine(IEnumerator routine)
+    {
+        ((MonoBehaviourExtended)instance).StopCoroutine(routine);
+    }
+
 }

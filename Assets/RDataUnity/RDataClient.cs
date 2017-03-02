@@ -22,7 +22,9 @@ namespace RData
 
         public ILocalDataRepository LocalDataRepository { get; set; }
 
-        public double ChunkLifeTime { get; set; }
+        public float ChunkLifeTime { get; set; }
+
+        public float ContextDataTrackRefreshTime { get; set; }
 
         public JsonRpcError<string> LastError { get; private set; }
 
@@ -39,12 +41,14 @@ namespace RData
 
         private AuthenticationContext _authenticationContext; // This is the root of our context tree
 
+        private IEnumerator _processBulkRequestCoroutine;
+        private IEnumerator _trackContextDataCoroutine;
+
         public RDataClient()
         {
             JsonRpcClient = new JsonRpcClient();
-            JsonRpcClient.OnLostConnection += OnLostConnection;
-            JsonRpcClient.OnReconnected += OnReconnected;
-            ChunkLifeTime = 10d;
+            ChunkLifeTime = 10f;
+            ContextDataTrackRefreshTime = 0.100f; // 100 milliseconds
 
             LocalDataRepository = new LocalDataRepository();
         }
@@ -58,11 +62,20 @@ namespace RData
         {
             yield return CoroutineManager.StartCoroutine(JsonRpcClient.Close());
             EndAuthenticationContext();
+            CoroutineManager.StopCoroutine(_processBulkRequestCoroutine);
+            CoroutineManager.StopCoroutine(_trackContextDataCoroutine);
         }
 
         public void CloseImmidiately()
         {
-            JsonRpcClient.CloseImmidiately();
+            CoroutineManager.StartCoroutine(JsonRpcClient.Close());
+
+            if (Authenticated)
+            {
+                EndAuthenticationContext();
+                CoroutineManager.StopCoroutine(_processBulkRequestCoroutine);
+                CoroutineManager.StopCoroutine(_trackContextDataCoroutine);
+            }
         }
 
         public IEnumerator Send<TRequest, TResponse>(TRequest request, bool immediately = false)
@@ -172,6 +185,32 @@ namespace RData
                 EndAuthenticationContext(); // End it
         }
 
+        private IEnumerator TrackContextDataCoroutine()
+        {
+            Queue<RDataBaseContext> queue = new Queue<RDataBaseContext>();
+
+            while (true)
+            {
+                // Traverse the context tree breadth-first and find new changes in the context data
+                queue.Enqueue(_authenticationContext);
+                while(queue.Count > 0)
+                {
+                    RDataBaseContext current = queue.Dequeue();
+                    foreach(var kvp in current.GetUpdatedFields())
+                    {
+                        Debug.Log("<color=red>Data updated in context, key = " + kvp.Key + ", value = " + kvp.Value + " </color>");
+                        UpdateContextData(current, kvp.Key, kvp.Value);
+                    }
+
+                    foreach (var child in current.Children)
+                        if(child.Status == RDataContextStatus.Started)
+                            queue.Enqueue(child);
+                }
+
+                yield return new WaitForSeconds(ContextDataTrackRefreshTime);
+            }
+        }
+
         public virtual IEnumerator Authenticate(string userId)
         {
             if (Authenticated)
@@ -180,11 +219,22 @@ namespace RData
             yield return CoroutineManager.StartCoroutine(SendAuthenticationRequest(userId));
 
             if (Authenticated)
-            {                
+            {
+                // Initialize events
+                JsonRpcClient.OnLostConnection += OnLostConnection;
+                JsonRpcClient.OnReconnected += OnReconnected;
+
                 // Initialize rdata client after authentication
                 EndInterruptedAuthenticationContext(); // First, load previously saved root auth context and end it properly
                 StartAuthenticationContext(); // Then, start new root context
-                CoroutineManager.StartCoroutine(ProcessBulkedRequests()); // Start bulk request processing coroutine
+
+                // Start bulk request processing coroutine
+                _processBulkRequestCoroutine = ProcessBulkedRequests();
+                CoroutineManager.StartCoroutine(_processBulkRequestCoroutine);
+
+                // Start context data tracking
+                _trackContextDataCoroutine = TrackContextDataCoroutine();
+                CoroutineManager.StartCoroutine(_trackContextDataCoroutine);
             }
         }
 
@@ -255,6 +305,25 @@ namespace RData
 
             var request = new Requests.Contexts.RestoreContextRequest(context);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.RestoreContextRequest, BooleanResponse>(request, immediately));
+        }
+
+        public void SetContextData<TContextData>(RDataContext<TContextData> context, TContextData data, bool immediately = false)
+            where TContextData : class, new()
+        {
+            if (!Authenticated)
+                throw new RDataException("Failed to set data for context " + context.Name + ", not authenticated");
+
+            var request = new Requests.Contexts.SetContextDataRequest<TContextData>(context, data, Tools.Time.UnixTime);
+            CoroutineManager.StartCoroutine(Send<Requests.Contexts.SetContextDataRequest<TContextData>, BooleanResponse>(request, immediately));
+        }
+
+        public void UpdateContextData(RDataBaseContext context, string key, object value, bool immediately = false)
+        {
+            if (!Authenticated)
+                throw new RDataException("Failed to set data for context " + context.Name + ", not authenticated");
+
+            var request = new Requests.Contexts.UpdateContextDataVariableRequest(context, key, value, Tools.Time.UnixTime);
+            CoroutineManager.StartCoroutine(Send<Requests.Contexts.UpdateContextDataVariableRequest, BooleanResponse>(request, immediately));
         }
     }
 }
