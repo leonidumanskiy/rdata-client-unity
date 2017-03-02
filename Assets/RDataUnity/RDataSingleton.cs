@@ -47,7 +47,7 @@ namespace RData
                 return;
 
             _client.CloseImmidiately();
-            print(this.GetType().Name + " was destroyed");
+            Debug.Log(this.GetType().Name + " was destroyed");
         }
     }
 }

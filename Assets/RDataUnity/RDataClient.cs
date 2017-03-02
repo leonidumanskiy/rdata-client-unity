@@ -47,7 +47,7 @@ namespace RData
         public RDataClient()
         {
             JsonRpcClient = new JsonRpcClient();
-            ChunkLifeTime = 10f;
+            ChunkLifeTime = 1f; // 1 second
             ContextDataTrackRefreshTime = 0.100f; // 100 milliseconds
 
             LocalDataRepository = new LocalDataRepository();
@@ -198,7 +198,7 @@ namespace RData
                     RDataBaseContext current = queue.Dequeue();
                     foreach(var kvp in current.GetUpdatedFields())
                     {
-                        Debug.Log("<color=red>Data updated in context, key = " + kvp.Key + ", value = " + kvp.Value + " </color>");
+                        Debug.Log("<color=teal>Data updated in context, key = " + kvp.Key + ", value = " + kvp.Value + " </color>");
                         UpdateContextData(current, kvp.Key, kvp.Value);
                     }
 

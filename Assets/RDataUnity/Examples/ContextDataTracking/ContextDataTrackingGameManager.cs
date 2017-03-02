@@ -4,19 +4,23 @@ using UnityEngine;
 using RData;
 using RData.Contexts;
 
-namespace RData.Examples.UI
+namespace RData.Examples.ContextDataTracking
 {
-    public class GameManager : MonoBehaviour
+    public class ContextDataTrackingGameManager : MonoBehaviour
     {
-        public GameObject loadingOverlay;
-        public GameObject mainWindow;
-
         public class MyContext : RDataContext<MyContext.MyContextData>
         {
-            public class MyContextData
+            [TrackClass]
+            public class Test
             {
                 [TrackVar]
                 public int someNumber = 0;
+            }
+
+            public class MyContextData
+            {
+                [TrackVar]
+                public Test test = new Test();
             }
         }
 
@@ -26,22 +30,20 @@ namespace RData.Examples.UI
                 yield return null;
 
             yield return StartCoroutine(RDataSingleton.Client.Authenticate(SystemInfo.deviceUniqueIdentifier));
-            loadingOverlay.SetActive(false);
-            mainWindow.SetActive(true);
-            
+
             var testContext = new MyContext();
             RDataSingleton.Client.StartContext(testContext);
-            Debug.Log("<color=yellow>starting context</color>");
-            for (int i=1; i<6; i++)
+            Debug.Log("<color=yellow>Starting MyContext</color>");
+            for (int i = 1; i < 6; i++)
             {
                 yield return new WaitForSeconds(2f);
-                testContext.Data.someNumber = i;
-                Debug.Log("<color=yellow>someNumber = " + testContext.Data.someNumber + ", i = " + i + "</color>");
+                testContext.Data.test.someNumber = i;
+                Debug.Log("<color=yellow>Updating test.someNumber to " + testContext.Data.test.someNumber + ", i = " + i + "</color>");
                 yield return new WaitForSeconds(3f);
             }
-            Debug.Log("<color=yellow>Ending context</color>");
+            Debug.Log("<color=yellow>Ending MyContext</color>");
             RDataSingleton.Client.EndContext(testContext);
 
         }
     }
-} 
+}
