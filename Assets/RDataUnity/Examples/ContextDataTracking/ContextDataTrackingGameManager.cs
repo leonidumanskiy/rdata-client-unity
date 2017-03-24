@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using RData;
+using RData.Authorization;
 using RData.Contexts;
 
 namespace RData.Examples.ContextDataTracking
@@ -29,7 +30,9 @@ namespace RData.Examples.ContextDataTracking
             while (!RDataSingleton.Client.IsAvailable)
                 yield return null;
 
-            yield return StartCoroutine(RDataSingleton.Client.Authenticate(SystemInfo.deviceUniqueIdentifier));
+
+            RDataSingleton.Client.AuthorizationStrategy.UserId = SystemInfo.deviceUniqueIdentifier;
+            yield return StartCoroutine(RDataSingleton.Client.Authorize());
 
             var testContext = new MyContext();
             RDataSingleton.Client.StartContext(testContext);

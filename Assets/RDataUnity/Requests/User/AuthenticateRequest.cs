@@ -4,12 +4,12 @@ using LitJson;
 
 namespace RData.Requests.User
 {
-    public class AuthenticateRequest : JsonRpcRequest<AuthenticateRequest.Parameters, BooleanResponse>
+    public class AuthorizationRequest : JsonRpcRequest<AuthorizationRequest.Parameters, BooleanResponse>
     {
         [JsonAlias("method")]
         public override string Method
         {
-            get { return "authenticate"; }
+            get { return "authorize"; }
         }
 
         [JsonIgnore]
@@ -24,9 +24,9 @@ namespace RData.Requests.User
             public string UserId { get; set; }
         }
 
-        public AuthenticateRequest() : base() { }
+        public AuthorizationRequest() : base() { }
 
-        public AuthenticateRequest(string userId) : base()
+        public AuthorizationRequest(string userId) : base()
         {
             Params = new Parameters()
             {

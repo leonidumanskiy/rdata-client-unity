@@ -47,7 +47,7 @@ namespace RData.Ui.Tracking
 
         private void RegisterClick(Vector2 screenPoint, int button, bool isTouch = false)
         {
-            if (!_rdataClient.Authenticated)
+            if (!_rdataClient.Authorized)
                 return;
 
             PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);

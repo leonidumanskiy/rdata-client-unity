@@ -53,12 +53,13 @@ namespace RData.Tests
             _testStopWatch = null;
         }
 
-        IEnumerator Authenticate() // Fixture function for authenticating before testing
+        IEnumerator Authorize() // Fixture function for authorizing before testing
         {
-            _jsonRpcClient.ExpectRequestWithMethod(new AuthenticateRequest().Method, new BooleanResponse(true));
-            _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true)); // Authentication context
-            yield return CoroutineManager.StartCoroutine(_rDataClient.Authenticate(TestUserId));
-            Assert.IsTrue(_rDataClient.Authenticated, "User authentication failed");
+            _jsonRpcClient.ExpectRequestWithMethod(new AuthorizationRequest().Method, new BooleanResponse(true));
+            _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true)); // Authorization context
+            _rDataClient.AuthorizationStrategy.UserId = TestUserId;
+            yield return CoroutineManager.StartCoroutine(_rDataClient.Authorize());
+            Assert.IsTrue(_rDataClient.Authorized, "User authorization failed");
         }
 
         /*
@@ -91,27 +92,27 @@ namespace RData.Tests
             var expectedResponse = new BooleanResponse(true);
 
             _jsonRpcClient.ExpectRequestWithId(request.Id, expectedResponse);
-            _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true)); // Authentication context
+            _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true)); // Authorization context
 
             yield return CoroutineManager.StartCoroutine(_rDataClient.Send<MockRequest, BooleanResponse>(request));
             Assert.AreEqual(request.Response.Result, expectedResponse.Result, "Request results don't match");
         }
 
         [Test]
-        public void TestAuthenticationRequest()
+        public void TestAuthorizationRequest()
         {
-            _coroutineManager.TestCoroutine(TestAuthenticationRequestCoro());
+            _coroutineManager.TestCoroutine(TestAuthorizationRequestCoro());
         }
 
-        public IEnumerator TestAuthenticationRequestCoro()
+        public IEnumerator TestAuthorizationRequestCoro()
         {
-            var request = new AuthenticateRequest(TestUserId);
+            var request = new AuthorizationRequest(TestUserId);
             var expectedResponse = new BooleanResponse(true);
 
             _jsonRpcClient.ExpectRequestWithId(request.Id, expectedResponse);
-            _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true)); // Authentication context
+            _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true)); // Authorization context
 
-            yield return CoroutineManager.StartCoroutine(_rDataClient.Send<AuthenticateRequest, BooleanResponse>(request));
+            yield return CoroutineManager.StartCoroutine(_rDataClient.Send<AuthorizationRequest, BooleanResponse>(request));
             Assert.AreEqual(request.Response.Result, expectedResponse.Result, "Request returned false");
         }
         
@@ -123,7 +124,7 @@ namespace RData.Tests
 
         public IEnumerator TestLogEventCoro()
         {
-            yield return CoroutineManager.StartCoroutine(Authenticate());
+            yield return CoroutineManager.StartCoroutine(Authorize());
 
             _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true));
 
@@ -146,7 +147,7 @@ namespace RData.Tests
 
         public IEnumerator TestStartContextCoro()
         {
-            yield return CoroutineManager.StartCoroutine(Authenticate());
+            yield return CoroutineManager.StartCoroutine(Authorize());
 
             _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true));
 
@@ -170,7 +171,7 @@ namespace RData.Tests
 
         public IEnumerator TestEndContextCoro()
         {
-            yield return CoroutineManager.StartCoroutine(Authenticate());
+            yield return CoroutineManager.StartCoroutine(Authorize());
 
             // Start Context
             _jsonRpcClient.ExpectRequestWithMethod(new Requests.System.BulkRequest().Method, new BooleanResponse(true));

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using RData;
 using RData.Contexts;
+using RData.Authorization;
 
 namespace RData.Examples.UI
 {
@@ -16,8 +17,10 @@ namespace RData.Examples.UI
         {
             while (!RDataSingleton.Client.IsAvailable)
                 yield return null;
-
-            yield return StartCoroutine(RDataSingleton.Client.Authenticate(SystemInfo.deviceUniqueIdentifier));
+            
+            RDataSingleton.Client.AuthorizationStrategy.UserId = SystemInfo.deviceUniqueIdentifier;
+            yield return StartCoroutine(RDataSingleton.Client.Authorize());
+            
             loadingOverlay.SetActive(false);
             mainWindow.SetActive(true);
         }
