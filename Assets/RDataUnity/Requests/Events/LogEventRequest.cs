@@ -46,7 +46,7 @@ namespace RData.Requests.Events
                 Id = eventData.Id,
                 Name = eventData.Name,
                 ContextId = eventData.ContextId,
-                Time = Tools.Time.DateTimeToUnixTime(eventData.Time),
+                Time = Tools.Time.DateTimeToUnixTimeMilliseconds(eventData.Time),
                 Data = eventData.Data
             };
         }

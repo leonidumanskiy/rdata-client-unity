@@ -41,7 +41,7 @@ namespace RData.Requests.Contexts
             {
                 Id = context.Id,
                 Data = data,
-                TimeSet = timeSet.HasValue ? timeSet.Value : Tools.Time.UnixTime
+                TimeSet = timeSet.HasValue ? timeSet.Value : Tools.Time.UnixTimeMilliseconds
             };
         }
     }

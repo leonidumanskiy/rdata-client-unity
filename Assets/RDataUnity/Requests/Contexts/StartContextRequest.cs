@@ -49,7 +49,7 @@ namespace RData.Requests.Contexts
                 Name = context.Name,
                 ParentContextId = context.ParentContextId,
                 Data = context.Data,
-                TimeStarted = Tools.Time.DateTimeToUnixTime(context.TimeStarted)
+                TimeStarted = Tools.Time.DateTimeToUnixTimeMilliseconds(context.TimeStarted)
             };
         }
 

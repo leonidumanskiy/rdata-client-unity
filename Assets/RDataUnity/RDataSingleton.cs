@@ -6,6 +6,10 @@ namespace RData
 {
     public class RDataSingleton : MonoBehaviour
     {
+        public string m_hostName = "ws://localhost:8888";
+        public bool m_waitUntilConnected = true;
+        public double m_waitTimeout = 3f;
+
         private static RDataClient _client;
         public static RDataClient Client
         {
@@ -29,7 +33,7 @@ namespace RData
 
         IEnumerator Start()
         {
-            yield return StartCoroutine(_client.Open("ws://localhost:8888", true));
+            yield return StartCoroutine(_client.Open(m_hostName, m_waitUntilConnected, m_waitTimeout));
 
             if (_client.IsAvailable)
             {

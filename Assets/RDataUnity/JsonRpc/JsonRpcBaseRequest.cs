@@ -23,7 +23,7 @@ namespace RData.JsonRpc
         
         public JsonRpcBaseRequest()
         {
-            CreatedAt = Tools.Time.DateTimeToUnixTime(System.DateTime.UtcNow);
+            CreatedAt = Tools.Time.DateTimeToUnixTimeMilliseconds(System.DateTime.UtcNow);
         }
     }
 }

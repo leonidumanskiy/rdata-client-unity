@@ -153,7 +153,7 @@ namespace RData
                     }
 
                     // Check if the current chunk has items and expired. If so, save and refresh it
-                    if (_activeChunk.Length > 0 && DateTime.UtcNow > Tools.Time.UnixTimeToDateTime(_activeChunk.CreatedAt) + TimeSpan.FromSeconds(ChunkLifeTime))
+                    if (_activeChunk.Length > 0 && DateTime.UtcNow > Tools.Time.UnixTimeMillisecondsToDateTime(_activeChunk.CreatedAt) + TimeSpan.FromSeconds(ChunkLifeTime))
                     {
                         ResetActiveChunk();
                     }
@@ -299,7 +299,7 @@ namespace RData
             if (!Authorized)
                 throw new RDataException("Failed to set data for context " + context.Name + ", not authorized");
 
-            var request = new Requests.Contexts.SetContextDataRequest<TContextData>(context, data, Tools.Time.UnixTime);
+            var request = new Requests.Contexts.SetContextDataRequest<TContextData>(context, data, Tools.Time.UnixTimeMilliseconds);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.SetContextDataRequest<TContextData>, BooleanResponse>(request, immediately));
         }
 
@@ -308,7 +308,7 @@ namespace RData
             if (!Authorized)
                 throw new RDataException("Failed to set data for context " + context.Name + ", not authorized");
 
-            var request = new Requests.Contexts.UpdateContextDataVariableRequest(context, key, value, Tools.Time.UnixTime);
+            var request = new Requests.Contexts.UpdateContextDataVariableRequest(context, key, value, Tools.Time.UnixTimeMilliseconds);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.UpdateContextDataVariableRequest, BooleanResponse>(request, immediately));
         }
         

@@ -31,3 +31,13 @@ sysinfo.txt
 .Trashes
 ehthumbs.db
 [Tt]humbs.db
+
+
+# ========================== #
+# Class Library              #
+# ========================== #
+bin/
+!RDataClassLibrary.csproj
+!RDataClassLibrary.sln
+
+

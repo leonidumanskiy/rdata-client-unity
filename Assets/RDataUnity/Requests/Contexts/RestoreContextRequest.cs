@@ -37,7 +37,7 @@ namespace RData.Requests.Contexts
             Params = new Parameters()
             {
                 Id = context.Id,
-                TimeRestored = Tools.Time.DateTimeToUnixTime(DateTime.UtcNow)
+                TimeRestored = Tools.Time.DateTimeToUnixTimeMilliseconds(DateTime.UtcNow)
             };
         }
 

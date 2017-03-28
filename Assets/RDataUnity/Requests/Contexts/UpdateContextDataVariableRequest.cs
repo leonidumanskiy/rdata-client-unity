@@ -44,7 +44,7 @@ namespace RData.Requests.Contexts
                 Id = context.Id,
                 Key = key,
                 Value = value,
-                TimeUpdated = timeUpdated.HasValue ? timeUpdated.Value : Tools.Time.UnixTime
+                TimeUpdated = timeUpdated.HasValue ? timeUpdated.Value : Tools.Time.UnixTimeMilliseconds
             };
         }
     }
