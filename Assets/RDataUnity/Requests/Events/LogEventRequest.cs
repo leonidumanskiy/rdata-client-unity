@@ -1,7 +1,7 @@
 ﻿using RData.JsonRpc;
 using RData.Responses;
 using RData.Events;
-using LitJson;
+using RData.LitJson;
 
 namespace RData.Requests.Events
 {
@@ -21,19 +21,19 @@ namespace RData.Requests.Events
 
         public class Parameters
         {
-            [LitJson.JsonAlias("id")]
+            [RData.LitJson.JsonAlias("id")]
             public string Id { get; set; }
 
-            [LitJson.JsonAlias("name")]
+            [RData.LitJson.JsonAlias("name")]
             public string Name { get; set; }
 
-            [LitJson.JsonAlias("contextId")]
+            [RData.LitJson.JsonAlias("contextId")]
             public string ContextId { get; set; }
 
-            [LitJson.JsonAlias("time")]
+            [RData.LitJson.JsonAlias("time")]
             public long Time { get; set; }
 
-            [LitJson.JsonAlias("data")]
+            [RData.LitJson.JsonAlias("data")]
             public TEventData Data { get; set; }
         }
         

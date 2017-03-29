@@ -11,7 +11,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace LitJson {
+namespace RData.LitJson {
 
 internal enum Condition {
 	InArray,
@@ -30,7 +30,7 @@ internal class WriterContext {
 /// <summary>
 /// Stream-like facility to output JSON text.
 /// </summary>
-internal class JsonWriter {
+public class JsonWriter {
 	private static readonly NumberFormatInfo numberFormat;
 
 	private WriterContext context;

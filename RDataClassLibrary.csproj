@@ -74,20 +74,20 @@
     <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcException.cs" />
     <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcRequest.cs" />
     <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcResponse.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\Extensions.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\IJsonWrapper.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonAttribute.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonData.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonException.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonMapper.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonMockWrapper.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonReader.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonWriter.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\Lexer.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\ParserToken.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\Platform.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\Unity\UnityTypeBindings.cs" />
     <Compile Include="Assets\RDataUnity\Plugins\CoroutineManager.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\Extensions.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\IJsonWrapper.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\JsonAttribute.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\JsonData.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\JsonException.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\JsonMapper.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\JsonMockWrapper.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\JsonReader.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\JsonWriter.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\Lexer.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\ParserToken.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\Platform.cs" />
-    <Compile Include="Assets\RDataUnity\Plugins\LitJson\Unity\UnityTypeBindings.cs" />
     <Compile Include="Assets\RDataUnity\Plugins\MonoBehaviourExtended.cs" />
     <Compile Include="Assets\RDataUnity\RDataClient.cs" />
     <Compile Include="Assets\RDataUnity\RDataSingleton.cs" />
@@ -109,6 +109,23 @@
     <Compile Include="Assets\RDataUnity\UI\Tracking\GameObjectTracker.cs" />
     <Compile Include="Assets\RDataUnity\UI\Tracking\RectTransformTracker.cs" />
     <Compile Include="Assets\RDataUnity\UI\Tracking\TransformTracker.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\RDataUnity\Libraries\LitJson.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Extensions.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\IJsonWrapper.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonAttribute.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonData.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonException.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonMapper.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonMockWrapper.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonReader.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonWriter.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Lexer.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\ParserToken.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Platform.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Unity.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Unity\UnityTypeBindings.cs.meta" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>

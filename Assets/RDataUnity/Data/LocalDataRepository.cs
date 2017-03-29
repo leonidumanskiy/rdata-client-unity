@@ -54,7 +54,7 @@ namespace RData.Data
         {
             EnsureChunksDirectoryExists(userId);
 
-            var json = LitJson.JsonMapper.ToJson(dataChunk);
+            var json = RData.LitJson.JsonMapper.ToJson(dataChunk);
             var path = GetChunkFilePath(userId, dataChunk);
             File.WriteAllText(path, json);
         }
@@ -71,7 +71,7 @@ namespace RData.Data
             {
                 var requestId = file.Name;
                 var json = File.ReadAllText(file.FullName);
-                var baseRequest = LitJson.JsonMapper.ToObject<JsonRpc.JsonRpcBaseRequest>(json);
+                var baseRequest = RData.LitJson.JsonMapper.ToObject<JsonRpc.JsonRpcBaseRequest>(json);
                 
                 var chunkInfo = new LocalDataChunkInfo() { requestCreatedAt = baseRequest.CreatedAt, requestId = requestId, requestJson = json };
                 result.Add(chunkInfo);
@@ -98,7 +98,7 @@ namespace RData.Data
         public void SaveData<TData>(string userId, string key, TData data)
         {
             EnsureDataDirectoryExists(userId);
-            var json = LitJson.JsonMapper.ToJson(data);
+            var json = RData.LitJson.JsonMapper.ToJson(data);
             var path = GetDataFilePath(userId, key);
             File.WriteAllText(path, json);
         }
@@ -111,7 +111,7 @@ namespace RData.Data
                 return null;
 
             var json = File.ReadAllText(path);
-            var data = LitJson.JsonMapper.ToObject<TData>(json);
+            var data = RData.LitJson.JsonMapper.ToObject<TData>(json);
             return data;
         }
 

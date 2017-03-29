@@ -4,14 +4,14 @@ using UnityEngine;
 using System;
 using System.Collections;
 
-using LitJson.Extensions;
+using RData.LitJson.Extensions;
 
-namespace LitJson {
+namespace RData.LitJson {
 
-#if UNITY_EDITOR
-[UnityEditor.InitializeOnLoad]
-#endif
-internal static class UnityTypeBindings {
+	#if UNITY_EDITOR
+	[UnityEditor.InitializeOnLoad]
+	#endif
+	public static class UnityTypeBindings {
 
 		static bool registerd;
 

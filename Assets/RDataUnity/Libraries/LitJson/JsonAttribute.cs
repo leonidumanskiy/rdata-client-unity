@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-namespace LitJson {
+namespace RData.LitJson {
 
 [Flags]
-internal enum JsonIgnoreWhen {
+public enum JsonIgnoreWhen {
 	Never = 0,
 	Serializing = 1,
 	Deserializing = 2
 }
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-internal class JsonIgnore : Attribute {
+public class JsonIgnore : Attribute {
 	public JsonIgnoreWhen Usage { get; private set; }
 
 	public JsonIgnore() {
@@ -24,7 +24,7 @@ internal class JsonIgnore : Attribute {
 }
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-internal class JsonIgnoreMember : Attribute {
+public class JsonIgnoreMember : Attribute {
 	public HashSet<string> Members { get; private set; }
 
 	public JsonIgnoreMember(params string[] members) : this((ICollection<string>)members) {
@@ -39,11 +39,11 @@ internal class JsonIgnoreMember : Attribute {
 /// Attribute to be placed on non-public fields or properties to include them in serialization.
 /// </summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-internal class JsonInclude : Attribute {
+public class JsonInclude : Attribute {
 }
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-internal class JsonAlias : Attribute {
+public class JsonAlias : Attribute {
 	public string Alias { get; private set; }
 	public bool AcceptOriginal { get; private set; }
 

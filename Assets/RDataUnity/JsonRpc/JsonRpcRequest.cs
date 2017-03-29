@@ -1,5 +1,5 @@
 ﻿using System;
-using LitJson;
+using RData.LitJson;
 
 namespace RData.JsonRpc
 {

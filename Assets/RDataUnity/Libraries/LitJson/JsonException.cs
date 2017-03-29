@@ -7,12 +7,12 @@
 
 using System;
 
-namespace LitJson {
+namespace RData.LitJson {
 
 	/// <summary>
 	/// Base class throwed by LitJSON when a parsing error occurs.
 	/// </summary>
-	internal class JsonException : Exception {
+	public class JsonException : Exception {
 
 		public JsonException() : base() {}
 

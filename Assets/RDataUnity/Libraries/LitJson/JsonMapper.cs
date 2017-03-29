@@ -13,7 +13,7 @@ using System.IO;
 using System.Reflection;
 using System.Linq;
 
-namespace LitJson {
+namespace RData.LitJson {
 
 internal struct PropertyMetadata {
 	public Type Type { get; set; }
@@ -61,20 +61,20 @@ internal struct ObjectMetadata {
 }
 
 internal delegate void ExporterFunc(object obj, JsonWriter writer);
-internal delegate void ExporterFunc<T>(T obj, JsonWriter writer);
+public delegate void ExporterFunc<T>(T obj, JsonWriter writer);
 
 internal delegate object ImporterFunc(object input);
-internal delegate TValue ImporterFunc<TJson, TValue>(TJson input);
+public delegate TValue ImporterFunc<TJson, TValue>(TJson input);
 
 internal delegate object FactoryFunc();
-internal delegate T FactoryFunc<T>();
+public delegate T FactoryFunc<T>();
 
-internal delegate IJsonWrapper WrapperFactory();
+public delegate IJsonWrapper WrapperFactory();
 
 /// <summary>
 /// JSON to .Net object and object to JSON conversions.
 /// </summary>
-internal class JsonMapper {
+public class JsonMapper {
 	private static readonly int maxNestingDepth;
 	private static readonly IFormatProvider datetimeFormat;
 

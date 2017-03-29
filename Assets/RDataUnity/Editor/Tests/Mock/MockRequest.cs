@@ -14,7 +14,7 @@ namespace RData.Tests.Mock
 
         public class Parameters
         {
-            [LitJson.JsonAlias("test")]
+            [RData.LitJson.JsonAlias("test")]
             public string Test { get; set; }
         }
 

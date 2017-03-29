@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using RData.JsonRpc;
 using RData.Responses;
 using RData.Events;
-using LitJson;
+using RData.LitJson;
 
 namespace RData.Requests.System
 {
@@ -23,7 +23,7 @@ namespace RData.Requests.System
 
         public class Parameters
         {
-            [LitJson.JsonAlias("requests")]
+            [RData.LitJson.JsonAlias("requests")]
             public List<JsonRpcBaseRequest> Requests { get; set; }
         }
 

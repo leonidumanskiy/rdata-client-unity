@@ -115,7 +115,7 @@ namespace RData.JsonRpc
         {
 
             string id = request.Id;
-            string message = LitJson.JsonMapper.ToJson(request);
+            string message = RData.LitJson.JsonMapper.ToJson(request);
             Debug.Log("<color=olive>RData Send: " + message + "</color>");
             lock (_responses)
             {
@@ -134,7 +134,7 @@ namespace RData.JsonRpc
                         TResponse responseObject = null;
                         try
                         {
-                            responseObject = LitJson.JsonMapper.ToObject<TResponse>(responseJson);
+                            responseObject = RData.LitJson.JsonMapper.ToObject<TResponse>(responseJson);
                         } catch (Exception e)
                         {
                             throw new Exceptions.RDataException("Failed to deserialize json into " + typeof(TResponse).Name + ": " + responseJson, e);
@@ -174,7 +174,7 @@ namespace RData.JsonRpc
                             TResponse responseObject = null;
                             try
                             {
-                                responseObject = LitJson.JsonMapper.ToObject<TResponse>(responseJson);
+                                responseObject = RData.LitJson.JsonMapper.ToObject<TResponse>(responseJson);
                             } catch(Exception e)
                             {
                                 throw new Exceptions.RDataException("Failed to deserialize json into " + typeof(TResponse).Name + ": " + responseJson, e);
@@ -217,7 +217,7 @@ namespace RData.JsonRpc
         {
             Debug.Log("<color=green>RData Recv: " + e.Data + "</color>");
 
-            var response = LitJson.JsonMapper.ToObject<JsonRpcBaseResponse>(e.Data);
+            var response = RData.LitJson.JsonMapper.ToObject<JsonRpcBaseResponse>(e.Data);
             lock (_responses)
             {
                 if (!_responses.ContainsKey(response.Id))

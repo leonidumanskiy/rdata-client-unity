@@ -11,13 +11,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 
-namespace LitJson {
+namespace RData.LitJson {
 
 /// <summary>
 /// Generic type to hold JSON data (objects, arrays, and so on).
 /// This isthe default type returned by JsonMapper.ToObject().
 /// </summary>
-internal class JsonData : IJsonWrapper, IEquatable<JsonData> {
+public class JsonData : IJsonWrapper, IEquatable<JsonData> {
 	private object val;
 	private string json;
 	private JsonType type;

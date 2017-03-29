@@ -9,12 +9,12 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace LitJson {
+namespace RData.LitJson {
 
 /// <summary>
 /// Mock object implementing IJsonWrapper, to facilitate actions like skipping data more efficiently.
 /// </summary>
-internal class JsonMockWrapper : IJsonWrapper {
+public class JsonMockWrapper : IJsonWrapper {
 	public bool IsArray { get { return false; } }
 	public bool IsBoolean { get { return false; } }
 	public bool IsReal { get { return false; } }

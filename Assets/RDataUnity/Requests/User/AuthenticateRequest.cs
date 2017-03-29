@@ -1,6 +1,6 @@
 ﻿using RData.JsonRpc;
 using RData.Responses;
-using LitJson;
+using RData.LitJson;
 
 namespace RData.Requests.User
 {
@@ -20,7 +20,7 @@ namespace RData.Requests.User
 
         public class Parameters
         {
-            [LitJson.JsonAlias("userId")]
+            [RData.LitJson.JsonAlias("userId")]
             public string UserId { get; set; }
         }
 

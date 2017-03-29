@@ -22,7 +22,7 @@ namespace RData.Tests.Mock
                 return null;
 
             var json = _data[dictKey];
-            TData data = LitJson.JsonMapper.ToObject<TData>(json);
+            TData data = RData.LitJson.JsonMapper.ToObject<TData>(json);
             return data;
         }
 
@@ -52,13 +52,13 @@ namespace RData.Tests.Mock
 
         public void SaveData<TData>(string userId, string key, TData data)
         {
-            var json = LitJson.JsonMapper.ToJson(data);
+            var json = RData.LitJson.JsonMapper.ToJson(data);
             _data[userId + "." + key] = json;
         }
 
         public void SaveDataChunk(string userId, BulkRequest dataChunk)
         {
-            var requestJson = LitJson.JsonMapper.ToJson(dataChunk);
+            var requestJson = RData.LitJson.JsonMapper.ToJson(dataChunk);
             LocalDataChunkInfo chunkInfo = new LocalDataChunkInfo() { requestId = dataChunk.Id, requestJson = requestJson, requestCreatedAt = dataChunk.CreatedAt };
             if (!_dataChunks.ContainsKey(userId) || _dataChunks[userId] == null)
                 _dataChunks[userId] = new Dictionary<string, LocalDataChunkInfo>();

@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace LitJson {
+namespace RData.LitJson {
 
 internal class FsmContext {
 	public Lexer L;

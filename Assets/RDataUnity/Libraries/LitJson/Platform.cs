@@ -8,7 +8,7 @@ using System.IO;
 #if JSON_WINRT || (UNITY_METRO && !UNITY_EDITOR)
 namespace LitJson {
 
-	internal interface IOrderedDictionary : IDictionary, ICollection, IEnumerable {
+	public interface IOrderedDictionary : IDictionary, ICollection, IEnumerable {
 		object this [int index] {
 			get;
 			set;
@@ -18,7 +18,7 @@ namespace LitJson {
 		void RemoveAt (int index);
 	}
 	
-	internal static class Platform {
+	public static class Platform {
 
 		public static Type GetInterface(this Type _type,string name){
 			foreach(Type t in _type.GetTypeInfo().ImplementedInterfaces){

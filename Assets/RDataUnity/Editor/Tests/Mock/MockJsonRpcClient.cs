@@ -76,7 +76,7 @@ public class MockJsonRpcClient : IJsonRpcClient
 
     public IEnumerator SendJson<TResponse>(string message, string requestId, Action<TResponse> onResponse) where TResponse : JsonRpcBaseResponse
     {
-        var request = LitJson.JsonMapper.ToObject<JsonRpcBaseRequest>(message);
+        var request = RData.LitJson.JsonMapper.ToObject<JsonRpcBaseRequest>(message);
         if (_expectedRequestIds.ContainsKey(requestId))
         {
             var expectation = _expectedRequestIds[requestId];

@@ -2,7 +2,7 @@
 using RData.Responses;
 using RData.Events;
 using RData.Contexts;
-using LitJson;
+using RData.LitJson;
 
 namespace RData.Requests.Contexts
 {
@@ -23,19 +23,19 @@ namespace RData.Requests.Contexts
 
         public class Parameters
         {
-            [LitJson.JsonAlias("id")]
+            [RData.LitJson.JsonAlias("id")]
             public string Id { get; set; }
 
-            [LitJson.JsonAlias("name")]
+            [RData.LitJson.JsonAlias("name")]
             public string Name { get; set; }
             
-            [LitJson.JsonAlias("parentContextId")]
+            [RData.LitJson.JsonAlias("parentContextId")]
             public string ParentContextId { get; set; }
 
-            [LitJson.JsonAlias("data")]
+            [RData.LitJson.JsonAlias("data")]
             public TContextData Data { get; set; }
 
-            [LitJson.JsonAlias("timeStarted")]
+            [RData.LitJson.JsonAlias("timeStarted")]
             public long TimeStarted { get; set; }
         }
         

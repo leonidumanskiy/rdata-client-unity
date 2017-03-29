@@ -5,7 +5,7 @@
  */
 #endregion
 
-namespace LitJson {
+namespace RData.LitJson {
 
 /// <summary>
 /// Internal representation of the tokens used by the lexer and the parser.

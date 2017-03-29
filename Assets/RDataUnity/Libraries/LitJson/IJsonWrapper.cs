@@ -8,12 +8,12 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace LitJson {
+namespace RData.LitJson {
 
 /// <summary>
 /// This enum contains the possible types a JSON value can have.
 /// </summary>
-internal enum JsonType {
+public enum JsonType {
 	None,
 	Object,
 	Array,
@@ -27,7 +27,7 @@ internal enum JsonType {
 /// Interface that represents a type capable of handling all kinds of JSON data.
 /// This is mainly used when mapping objects through JsonMapper, and it's implemented by JsonData.
 /// </summary>
-internal interface IJsonWrapper : IList, IOrderedDictionary {
+public interface IJsonWrapper : IList, IOrderedDictionary {
 	bool IsObject { get; }
 	bool IsArray { get; }
 	bool IsString { get; }

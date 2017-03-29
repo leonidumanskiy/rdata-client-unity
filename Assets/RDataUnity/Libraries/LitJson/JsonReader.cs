@@ -10,9 +10,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace LitJson {
+namespace RData.LitJson {
 
-internal enum JsonToken {
+public enum JsonToken {
 	None,
 	Null,
 
@@ -34,7 +34,7 @@ internal enum JsonToken {
 /// <summary>
 /// Stream-like access to JSON text.
 /// </summary>
-internal class JsonReader {
+public class JsonReader {
 	private static readonly IDictionary<int, IDictionary<int, int[]>> parseTable;
 
 	private Stack<int> automationStack;

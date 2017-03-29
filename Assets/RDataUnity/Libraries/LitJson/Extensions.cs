@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace LitJson.Extensions {
+namespace RData.LitJson.Extensions {
 
-    internal static class Extensions {
+	public static class Extensions {
 
 		public static void WriteProperty(this JsonWriter w,string name,long value){
 			w.WritePropertyName(name);
