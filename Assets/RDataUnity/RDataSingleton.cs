@@ -26,8 +26,15 @@ namespace RData
                 _client = new RDataClient();
         }
 
+        private void EnsureSingleInstance()
+        {
+            if (FindObjectsOfType(typeof(RDataSingleton)).Length > 1)
+                Destroy(gameObject);
+        }
+
         private void Awake()
         {
+            EnsureSingleInstance();
             EnsureClientCreated();
         }
 

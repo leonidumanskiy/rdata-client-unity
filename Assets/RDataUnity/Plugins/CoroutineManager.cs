@@ -39,6 +39,12 @@ namespace RData
             }
         }
 
+        protected void Awake()
+        {
+            if (GameObject.FindObjectsOfType<CoroutineManager>().Length > 1)
+                Destroy(gameObject);
+        }
+
         public static new object StartCoroutine(IEnumerator routine)
         {
             return ((MonoBehaviourExtended)instance).StartCoroutine(routine);
