@@ -4,47 +4,50 @@ using System.Collections;
 using UnityEditor;
 #endif
 
-/// <summary>
-/// Simple class that let's you run
-/// coroutines from non-MonoBehavior classes
-/// </summary>
-public class CoroutineManager : MonoBehaviourExtended
+namespace RData
 {
-    // Singleton
-    private static CoroutineManager _instance = null;
-    private static CoroutineManager instance
+    /// <summary>
+    /// Simple class that let's you run
+    /// coroutines from non-MonoBehavior classes
+    /// </summary>
+    public class CoroutineManager : MonoBehaviourExtended
     {
-        get
+        // Singleton
+        private static CoroutineManager _instance = null;
+        private static CoroutineManager instance
         {
-            if (_instance == null)
+            get
             {
-                _instance = GameObject.FindObjectOfType<CoroutineManager>();
-
-                if(_instance == null)
+                if (_instance == null)
                 {
-                    System.Type t = typeof(CoroutineManager);
-                    _instance = new GameObject(t.FullName, t).GetComponent<CoroutineManager>();
+                    _instance = GameObject.FindObjectOfType<CoroutineManager>();
 
-                    #if UNITY_EDITOR
-                    if (!EditorApplication.isPaused)
-                        return _instance;
-                    #endif
+                    if (_instance == null)
+                    {
+                        System.Type t = typeof(CoroutineManager);
+                        _instance = new GameObject(t.FullName, t).GetComponent<CoroutineManager>();
 
-                    DontDestroyOnLoad(_instance);
+#if UNITY_EDITOR
+                        if (!EditorApplication.isPaused)
+                            return _instance;
+#endif
+
+                        DontDestroyOnLoad(_instance);
+                    }
                 }
+                return _instance;
             }
-            return _instance;
         }
+
+        public static new object StartCoroutine(IEnumerator routine)
+        {
+            return ((MonoBehaviourExtended)instance).StartCoroutine(routine);
+        }
+
+        public static new void StopCoroutine(IEnumerator routine)
+        {
+            ((MonoBehaviourExtended)instance).StopCoroutine(routine);
+        }
+
     }
-
-    public static new object StartCoroutine(IEnumerator routine)
-    {
-        return ((MonoBehaviourExtended)instance).StartCoroutine(routine);
-    } 
-
-    public static new void StopCoroutine(IEnumerator routine)
-    {
-        ((MonoBehaviourExtended)instance).StopCoroutine(routine);
-    }
-
 }

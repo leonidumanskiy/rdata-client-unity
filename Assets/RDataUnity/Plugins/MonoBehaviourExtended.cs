@@ -8,153 +8,156 @@ using System.Reflection;
 using UnityEditor;
 #endif
 
-public class MonoBehaviourExtended : MonoBehaviour
+namespace RData
 {
-    class EditorCoroutine : IEnumerator
+    public class MonoBehaviourExtended : MonoBehaviour
     {
-        private IEnumerator _routine;
-
-        public EditorCoroutine _currentYieldingCoro;
-
-        public AsyncOperation _currentYieldingAsyncOperation;
-
-        public DateTime _startedWaiting;
-        public float _waitingSeconds;
-
-        public bool didBreak = false;
-
-        public EditorCoroutine(IEnumerator routine)
+        class EditorCoroutine : IEnumerator
         {
-            _routine = routine;
+            private IEnumerator _routine;
+
+            public EditorCoroutine _currentYieldingCoro;
+
+            public AsyncOperation _currentYieldingAsyncOperation;
+
+            public DateTime _startedWaiting;
+            public float _waitingSeconds;
+
+            public bool didBreak = false;
+
+            public EditorCoroutine(IEnumerator routine)
+            {
+                _routine = routine;
+            }
+
+            public object Current
+            {
+                get { return _routine.Current; }
+            }
+
+            public bool MoveNext()
+            {
+                return _routine.MoveNext();
+            }
+
+            public void Reset()
+            {
+                _routine.Reset();
+            }
         }
 
-        public object Current
+        private readonly List<EditorCoroutine> _activeRoutines = new List<EditorCoroutine>();
+
+        public new object StartCoroutine(IEnumerator routine)
         {
-            get { return _routine.Current; }
-        }
-
-        public bool MoveNext()
-        {
-            return _routine.MoveNext();
-        }
-
-        public void Reset()
-        {
-            _routine.Reset();
-        }
-    }
-
-    private readonly List<EditorCoroutine> _activeRoutines = new List<EditorCoroutine>();
-
-    public new object StartCoroutine(IEnumerator routine)
-    {
 #if UNITY_EDITOR
-        if (!EditorApplication.isPlaying)
-            return StartEditorCoroutine(routine);
+            if (!EditorApplication.isPlaying)
+                return StartEditorCoroutine(routine);
 #endif
 
-        // In any usual occasions, use the standard coroutine
-        return ((MonoBehaviour)this).StartCoroutine(routine);
-    }
+            // In any usual occasions, use the standard coroutine
+            return ((MonoBehaviour)this).StartCoroutine(routine);
+        }
 
 #if UNITY_EDITOR
-    public void TestCoroutine(IEnumerator routine)
-    {
-        var testingCoroutine = StartEditorCoroutine(routine);
-        while (_activeRoutines.Contains(testingCoroutine))
+        public void TestCoroutine(IEnumerator routine)
         {
-            for (int i = 0; i < _activeRoutines.Count; i++)
+            var testingCoroutine = StartEditorCoroutine(routine);
+            while (_activeRoutines.Contains(testingCoroutine))
             {
-                ProcessCoroutine(_activeRoutines[i]);
+                for (int i = 0; i < _activeRoutines.Count; i++)
+                {
+                    ProcessCoroutine(_activeRoutines[i]);
+                }
+
+                _activeRoutines.RemoveAll(r => r.didBreak);
+
+                Thread.Sleep(1000 / 60); // Assume we have 60 fps
             }
-
-            _activeRoutines.RemoveAll(r => r.didBreak);
-
-            Thread.Sleep(1000 / 60); // Assume we have 60 fps
-        }
-    }
-
-    private EditorCoroutine StartEditorCoroutine(IEnumerator routine)
-    {
-        var editorCoroutine = new EditorCoroutine(routine);
-        _activeRoutines.Add(editorCoroutine);
-        return editorCoroutine;
-    }
-
-
-    private void ProcessCoroutine(EditorCoroutine routine)
-    {
-        if (routine._currentYieldingCoro != null)
-        {
-            ProcessCoroutine(routine._currentYieldingCoro);
-            if (routine._currentYieldingCoro.didBreak) // Inner coro is done
-                routine._currentYieldingCoro = null;
-
-            return;
         }
 
-        if (routine._currentYieldingAsyncOperation != null)
+        private EditorCoroutine StartEditorCoroutine(IEnumerator routine)
         {
-            if (routine._currentYieldingAsyncOperation.isDone) // Yilding operation is done
-            {
-                routine._currentYieldingAsyncOperation = null;
-            }
-            return;
+            var editorCoroutine = new EditorCoroutine(routine);
+            _activeRoutines.Add(editorCoroutine);
+            return editorCoroutine;
         }
 
-        if (routine._startedWaiting != default(DateTime))
-        {
-            var now = DateTime.UtcNow;
-            if (now >= routine._startedWaiting + TimeSpan.FromSeconds(routine._waitingSeconds))
-            {
-                routine._startedWaiting = default(DateTime);
-                routine._waitingSeconds = 0;
-            }
-            return;
-        }
 
-        if (routine.MoveNext())
+        private void ProcessCoroutine(EditorCoroutine routine)
         {
-            var current = routine.Current;
+            if (routine._currentYieldingCoro != null)
+            {
+                ProcessCoroutine(routine._currentYieldingCoro);
+                if (routine._currentYieldingCoro.didBreak) // Inner coro is done
+                    routine._currentYieldingCoro = null;
 
-            if (current is EditorCoroutine)
-            {
-                routine._currentYieldingCoro = (EditorCoroutine)current;
+                return;
             }
-            else if (current is AsyncOperation)
+
+            if (routine._currentYieldingAsyncOperation != null)
             {
-                routine._currentYieldingAsyncOperation = (AsyncOperation)current;
+                if (routine._currentYieldingAsyncOperation.isDone) // Yilding operation is done
+                {
+                    routine._currentYieldingAsyncOperation = null;
+                }
+                return;
             }
-            else if (current is WaitForSeconds)
+
+            if (routine._startedWaiting != default(DateTime))
             {
-                routine._startedWaiting = DateTime.UtcNow;
-                routine._waitingSeconds = float.Parse(GetInstanceField(typeof(WaitForSeconds), current, "m_Seconds").ToString());
+                var now = DateTime.UtcNow;
+                if (now >= routine._startedWaiting + TimeSpan.FromSeconds(routine._waitingSeconds))
+                {
+                    routine._startedWaiting = default(DateTime);
+                    routine._waitingSeconds = 0;
+                }
+                return;
             }
-            else if (current == null || current is int || current is bool)
+
+            if (routine.MoveNext())
             {
-                // Do nothing. Standard yield return null or something like that
-            }
-            else if(current is UnityEngine.Coroutine)
-            {
-                throw new Exception("Editor coroutine yielded UnityEngine.Coroutine. Use MonoBehaviorExtended.StartCoroutine instead of UnityEngine.StartCoroutine");
+                var current = routine.Current;
+
+                if (current is EditorCoroutine)
+                {
+                    routine._currentYieldingCoro = (EditorCoroutine)current;
+                }
+                else if (current is AsyncOperation)
+                {
+                    routine._currentYieldingAsyncOperation = (AsyncOperation)current;
+                }
+                else if (current is WaitForSeconds)
+                {
+                    routine._startedWaiting = DateTime.UtcNow;
+                    routine._waitingSeconds = float.Parse(GetInstanceField(typeof(WaitForSeconds), current, "m_Seconds").ToString());
+                }
+                else if (current == null || current is int || current is bool)
+                {
+                    // Do nothing. Standard yield return null or something like that
+                }
+                else if (current is UnityEngine.Coroutine)
+                {
+                    throw new Exception("Editor coroutine yielded UnityEngine.Coroutine. Use MonoBehaviorExtended.StartCoroutine instead of UnityEngine.StartCoroutine");
+                }
+                else
+                {
+                    throw new Exception("Unknown type of yielded object: " + current.GetType());
+                }
             }
             else
             {
-                throw new Exception("Unknown type of yielded object: " + current.GetType());
+                routine.didBreak = true;
             }
         }
-        else
-        {
-            routine.didBreak = true;
-        }
-    }
 
-    static object GetInstanceField(Type type, object instance, string fieldName)
-    {
-        BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-        FieldInfo field = type.GetField(fieldName, bindFlags);
-        return field.GetValue(instance);
-    }
+        static object GetInstanceField(Type type, object instance, string fieldName)
+        {
+            BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+            FieldInfo field = type.GetField(fieldName, bindFlags);
+            return field.GetValue(instance);
+        }
 
 #endif
+    }
 }
