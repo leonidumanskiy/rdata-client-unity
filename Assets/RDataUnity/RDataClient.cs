@@ -19,6 +19,12 @@ namespace RData
 {
     public class RDataClient
     {
+        private const string kContextValidationError = "ContextValidationError";
+
+        // If sending a chunk results in an unknown error, this means something wrong with the server. 
+        // To prevent spamming the server, take this timeout before re-trying to send a chunk
+        private const float kTimeoutAfterError = 5.0f;
+
         public IJsonRpcClient JsonRpcClient { get; set; }
 
         public ILocalDataRepository LocalDataRepository { get; set; }
@@ -139,6 +145,7 @@ namespace RData
                 // When available, authorized, and root context is restored try to send out chunks
                 if (IsAvailable && Authorized && _authorizationContext.Status != RDataContextStatus.Interrupted)
                 {
+                    bool hasErrors = false;
                     var localDataChunks = LocalDataRepository.LoadDataChunksJson(UserId);
                     foreach (var chunk in localDataChunks)
                     {
@@ -146,10 +153,28 @@ namespace RData
                         {
                             if (response.Result)
                                 LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId); // At this point we received a positive answer from the server
-                            
-                            // If response.Result is false, something went wrong, either on the server, or the data is corrupt
-                            // What should we do? Remove chunk to prevent spamming server?
+
+                            // Most realistic scenario here is 
+                            if (response.HasError)
+                            {
+                                if(response.Error.Data == kContextValidationError)
+                                {
+                                    // This is a very specific case that happens when we are trying to re-send a chunk with context operations after that context was closed.
+                                    // This means this chunk was already received by the server and we can safely delete it.
+                                    LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId);
+                                }
+                                else
+                                {
+                                    hasErrors = true;
+                                }
+                            }
+
                         }));
+
+                        // If any unknown errors happened this means that most likely something horribly wrong with the server.
+                        // Let's take some timeout to prevent spamming it
+                        if (hasErrors)
+                            yield return new WaitForSeconds(kTimeoutAfterError);
                     }
 
                     // Check if the current chunk has items and expired. If so, save and refresh it
