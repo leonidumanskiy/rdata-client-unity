@@ -19,7 +19,7 @@ namespace RData
 {
     public class RDataClient
     {
-        private const string kContextValidationError = "ContextValidationError";
+        private const string kContextValidationError = "Context validation failed";
 
         // If sending a chunk results in an unknown error, this means something wrong with the server. 
         // To prevent spamming the server, take this timeout before re-trying to send a chunk
@@ -162,6 +162,7 @@ namespace RData
                                     // This is a very specific case that happens when we are trying to re-send a chunk with context operations after that context was closed.
                                     // This means this chunk was already received by the server and we can safely delete it.
                                     LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId);
+                                    Debug.LogError("Context validation error. This chunk was already received by the server. Deletting the chunk");
                                 }
                                 else
                                 {
