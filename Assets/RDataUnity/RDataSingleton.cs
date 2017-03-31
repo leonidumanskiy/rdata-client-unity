@@ -22,9 +22,21 @@ namespace RData
             }
         }
 
+        private static RDataSingleton _instance;
+        public static RDataSingleton instance
+        {
+            get { return _instance; }
+        }
+
         void OnApplicationQuit()
         {
             _isApplicationQuitting = true;
+        }
+
+        private void EnsureSingletonCreated()
+        {
+            if (_instance == null)
+                _instance = this;
         }
 
         private static void EnsureClientCreated()
@@ -42,6 +54,7 @@ namespace RData
         private void Awake()
         {
             EnsureSingleInstance();
+            EnsureSingletonCreated();
             EnsureClientCreated();
         }
 
@@ -59,7 +72,7 @@ namespace RData
             }
         }
 
-        IEnumerator Restart()
+        public IEnumerator Restart()
         {
             yield return _client.Close();
             yield return StartCoroutine(_client.Open(m_hostName, m_waitUntilConnected, m_waitTimeout));
