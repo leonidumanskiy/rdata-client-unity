@@ -43,7 +43,7 @@ namespace RData
         private BulkRequest _activeChunk = new BulkRequest();
 
         private AuthorizationContext _authorizationContext; // This is the root of our context tree
-
+        
         private IEnumerator _processBulkRequestCoroutine;
         private IEnumerator _trackContextDataCoroutine;
 
@@ -70,11 +70,11 @@ namespace RData
             CoroutineManager.StopCoroutine(_trackContextDataCoroutine);
         }
 
-        public void CloseImmidiately()
+        public void CloseImmidiately(bool stopCoroutines=true)
         {
-            CoroutineManager.StartCoroutine(JsonRpcClient.Close());
+            JsonRpcClient.CloseImmidiately();
 
-            if (Authorized)
+            if (Authorized && stopCoroutines)
             {
                 EndAuthorizationContext();
                 CoroutineManager.StopCoroutine(_processBulkRequestCoroutine);

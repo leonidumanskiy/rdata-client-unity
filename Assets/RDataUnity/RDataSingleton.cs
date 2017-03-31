@@ -10,6 +10,8 @@ namespace RData
         public bool m_waitUntilConnected = true;
         public double m_waitTimeout = 3f;
 
+        private bool _isApplicationQuitting = false;
+
         private static RDataClient _client;
         public static RDataClient Client
         {
@@ -18,6 +20,11 @@ namespace RData
                 EnsureClientCreated();
                 return _client;
             }
+        }
+
+        void OnApplicationQuit()
+        {
+            _isApplicationQuitting = true;
         }
 
         private static void EnsureClientCreated()
@@ -52,12 +59,18 @@ namespace RData
             }
         }
 
+        IEnumerator Restart()
+        {
+            yield return _client.Close();
+            yield return StartCoroutine(_client.Open(m_hostName, m_waitUntilConnected, m_waitTimeout));
+        }
+
         void OnDestroy()
         {
             if (_client == null)
                 return;
 
-            _client.CloseImmidiately();
+            _client.CloseImmidiately(!_isApplicationQuitting);
             Debug.Log(this.GetType().Name + " was destroyed");
         }
     }
