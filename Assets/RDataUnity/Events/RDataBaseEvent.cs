@@ -11,5 +11,7 @@ namespace RData.Events
         public string Name { get; set; }
 
         public System.DateTime Time { get; set; }
+
+        public abstract int EventDataVersion { get; }
     }
 }

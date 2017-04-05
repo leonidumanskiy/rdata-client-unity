@@ -43,6 +43,8 @@ namespace RData
         {
             if (GameObject.FindObjectsOfType<CoroutineManager>().Length > 1)
                 Destroy(gameObject);
+
+            DontDestroyOnLoad(gameObject);
         }
 
         public static new object StartCoroutine(IEnumerator routine)

@@ -8,7 +8,9 @@ namespace RData.Contexts
 
         public string Name { get; set; }
         
-        public string ParentContextId { get; set; }
+        public string ParentContextId { get { return Parent == null ? null : Parent.Id; } }
+
+        public RDataBaseContext Parent { get; set; }
 
         public List<RDataBaseContext> Children { get; set; }
 
@@ -18,12 +20,16 @@ namespace RData.Contexts
 
         public System.DateTime TimeEnded { get; set; }
 
+        public abstract int ContextDataVersion { get; }
+
 
         public virtual void End() { }
 
         public virtual void Restore() { }
 
         public virtual void AddChild(RDataBaseContext context) { }
+
+        public virtual void RemoveChild(RDataBaseContext context) { }
 
         public virtual IEnumerable<KeyValuePair<string, object>> GetUpdatedFields() { return null; }
     }

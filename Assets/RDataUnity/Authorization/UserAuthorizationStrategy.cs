@@ -31,7 +31,7 @@ namespace RData.Authorization
             if (string.IsNullOrEmpty(UserId))
                 throw new RDataException("You must set the user id on the authorization strategy to authorize");
 
-            yield return CoroutineManager.StartCoroutine(SendAuthorizationRequest(UserId));
+            yield return CoroutineManager.StartCoroutine(SendAuthorizationRequest(UserId, _client.GameVersion));
 
             if (_client.Authorized)
                 _client.OnAuthorized();
@@ -40,12 +40,12 @@ namespace RData.Authorization
         public IEnumerator RestoreAuthorization()
         {
             // For re-authorization, simply send the user id
-            yield return CoroutineManager.StartCoroutine(SendAuthorizationRequest(UserId));
+            yield return CoroutineManager.StartCoroutine(SendAuthorizationRequest(UserId, _client.GameVersion));
         }
 
-        private IEnumerator SendAuthorizationRequest(string userId)
+        private IEnumerator SendAuthorizationRequest(string userId, int gameVersion)
         {
-            var request = new Requests.User.AuthorizationRequest(userId);
+            var request = new Requests.User.AuthorizationRequest(userId, gameVersion);
             yield return CoroutineManager.StartCoroutine(_client.Send<Requests.User.AuthorizationRequest, BooleanResponse>(request));
             if (request.Response.HasError)
             {

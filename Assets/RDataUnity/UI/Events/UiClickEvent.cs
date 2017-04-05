@@ -8,6 +8,11 @@ namespace RData.Ui.Events
 {
     public class UiClickEvent : RDataEvent<UiClickEvent.UiClickEventData>
     {
+        public override int EventDataVersion
+        {
+            get { return 1; }
+        }
+
         public class UiClickEventData
         {
             public string GameObjectGuid;

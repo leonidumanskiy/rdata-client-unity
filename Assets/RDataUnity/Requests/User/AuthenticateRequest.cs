@@ -22,15 +22,19 @@ namespace RData.Requests.User
         {
             [RData.LitJson.JsonAlias("userId")]
             public string UserId { get; set; }
+
+            [RData.LitJson.JsonAlias("gameVersion")]
+            public int GameVersion { get; set; }
         }
 
         public AuthorizationRequest() : base() { }
 
-        public AuthorizationRequest(string userId) : base()
+        public AuthorizationRequest(string userId, int gameVersion) : base()
         {
             Params = new Parameters()
             {
-                UserId = userId
+                UserId = userId,
+                GameVersion = gameVersion
             };
         }
     }

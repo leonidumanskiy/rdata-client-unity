@@ -4,6 +4,7 @@ using UnityEngine;
 using RData;
 using RData.Authorization;
 using RData.Contexts;
+using System;
 
 namespace RData.Examples.ContextDataTracking
 {
@@ -11,6 +12,11 @@ namespace RData.Examples.ContextDataTracking
     {
         public class MyContext : RDataContext<MyContext.MyContextData>
         {
+            public override int ContextDataVersion
+            {
+                get { return 1; }
+            }
+
             [TrackClass]
             public class Test
             {

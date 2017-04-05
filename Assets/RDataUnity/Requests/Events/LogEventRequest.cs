@@ -6,6 +6,7 @@ using RData.LitJson;
 namespace RData.Requests.Events
 {
     public class LogEventRequest<TEventData> : JsonRpcRequest<LogEventRequest<TEventData>.Parameters, BooleanResponse>
+        where TEventData : class, new()
     {
         [JsonAlias("method")]
         public override string Method
@@ -33,21 +34,25 @@ namespace RData.Requests.Events
             [RData.LitJson.JsonAlias("time")]
             public long Time { get; set; }
 
+            [RData.LitJson.JsonAlias("eventDataVersion")]
+            public int EventDataVersion { get; set; }
+
             [RData.LitJson.JsonAlias("data")]
             public TEventData Data { get; set; }
         }
         
         public LogEventRequest() : base() { }
 
-        public LogEventRequest(RDataEvent<TEventData> eventData) : base()
+        public LogEventRequest(RDataEvent<TEventData> evt) : base()
         {
             Params = new Parameters()
             {
-                Id = eventData.Id,
-                Name = eventData.Name,
-                ContextId = eventData.ContextId,
-                Time = Tools.Time.DateTimeToUnixTimeMilliseconds(eventData.Time),
-                Data = eventData.Data
+                Id = evt.Id,
+                Name = evt.Name,
+                ContextId = evt.ContextId,
+                Time = Tools.Time.DateTimeToUnixTimeMilliseconds(evt.Time),
+                Data = evt.Data,
+                EventDataVersion = evt.EventDataVersion
             };
         }
     }

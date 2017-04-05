@@ -18,6 +18,7 @@ namespace RData.Tests
     {
         const string TestUserId = "testUserId";
         const double TestTimeout = 5.0d; // Seconds
+        const int gameVersion = 1;
 
         private MockJsonRpcClient _jsonRpcClient;
         private MockDataRepository _localDataRepository;
@@ -106,7 +107,7 @@ namespace RData.Tests
 
         public IEnumerator TestAuthorizationRequestCoro()
         {
-            var request = new AuthorizationRequest(TestUserId);
+            var request = new AuthorizationRequest(TestUserId, gameVersion);
             var expectedResponse = new BooleanResponse(true);
 
             _jsonRpcClient.ExpectRequestWithId(request.Id, expectedResponse);

@@ -7,6 +7,11 @@ namespace RData.Tests.Mock
 {
     public class MockEvent : RDataEvent<MockEvent.MockEventData>
     {
+        public override int EventDataVersion
+        {
+            get { return 1; }
+        }
+
         public class MockEventData
         {
             public string TestData;

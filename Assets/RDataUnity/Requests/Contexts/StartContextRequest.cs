@@ -32,13 +32,17 @@ namespace RData.Requests.Contexts
             [RData.LitJson.JsonAlias("parentContextId")]
             public string ParentContextId { get; set; }
 
+            [RData.LitJson.JsonAlias("timeStarted")]
+            public long TimeStarted { get; set; }
+
+            [RData.LitJson.JsonAlias("contextDataVersion")]
+            public int ContextDataVersion { get; set; }
+
             [RData.LitJson.JsonAlias("data")]
             public TContextData Data { get; set; }
 
-            [RData.LitJson.JsonAlias("timeStarted")]
-            public long TimeStarted { get; set; }
         }
-        
+
         public StartContextRequest() : base() { }
 
         public StartContextRequest(RDataContext<TContextData> context) : base()
@@ -49,7 +53,8 @@ namespace RData.Requests.Contexts
                 Name = context.Name,
                 ParentContextId = context.ParentContextId,
                 Data = context.Data,
-                TimeStarted = Tools.Time.DateTimeToUnixTimeMilliseconds(context.TimeStarted)
+                TimeStarted = Tools.Time.DateTimeToUnixTimeMilliseconds(context.TimeStarted),
+                ContextDataVersion = context.ContextDataVersion
             };
         }
 

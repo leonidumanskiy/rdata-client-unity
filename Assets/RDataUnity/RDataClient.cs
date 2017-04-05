@@ -31,6 +31,8 @@ namespace RData
 
         public IAuthorizationStrategy AuthorizationStrategy { get; set; }
 
+        public int GameVersion { get; set; }
+
         public float ChunkLifeTime { get; set; }
 
         public float ContextDataTrackRefreshTime { get; set; }
@@ -52,12 +54,14 @@ namespace RData
         
         private IEnumerator _processBulkRequestCoroutine;
         private IEnumerator _trackContextDataCoroutine;
+        private Queue<RDataBaseContext> _contextTreeTraversalHelperQueue = new Queue<RDataBaseContext>(); // Used to not allocate a new queue when traversing the context tree
 
         public RDataClient()
         {
             JsonRpcClient = new JsonRpcClient();
             ChunkLifeTime = 1f; // 1 second
             ContextDataTrackRefreshTime = 0.100f; // 100 milliseconds
+            GameVersion = 1;
 
             LocalDataRepository = new LocalDataRepository(); // Instantiate the local data repository
             AuthorizationStrategy = new UserAuthorizationStrategy(this); // Instantiate the user authorization strategy
@@ -68,24 +72,52 @@ namespace RData
             yield return CoroutineManager.StartCoroutine(JsonRpcClient.Open(hostName, waitUntilConnected, waitTimeout));
         }
 
+        /// <summary>
+        /// Closes the connection and yields (waits for it to be closed)
+        /// </summary>
         public IEnumerator Close()
         {
+            if (Authorized)
+            {
+                // End the root context
+                if (_authorizationContext != null)
+                    EndAuthorizationContext();
+
+                // Force client to send the data to the server immidiately, ignore the ChunkLifeTime and chunk max length
+                ResetActiveChunk();
+
+                // Wait for the next ProcessBulkedRequests call to send the chunk
+                yield return CoroutineManager.StartCoroutine(WaitForAllChunksToBeProcessed());
+
+                if (_processBulkRequestCoroutine != null)
+                    CoroutineManager.StopCoroutine(_processBulkRequestCoroutine);
+
+                if (_trackContextDataCoroutine != null)
+                    CoroutineManager.StopCoroutine(_trackContextDataCoroutine);
+            }
+
             yield return CoroutineManager.StartCoroutine(JsonRpcClient.Close());
-            EndAuthorizationContext();
-            CoroutineManager.StopCoroutine(_processBulkRequestCoroutine);
-            CoroutineManager.StopCoroutine(_trackContextDataCoroutine);
         }
 
+        /// <summary>
+        /// Closes the connection and doesn't yield. 
+        /// </summary>
+        /// <param name="stopCoroutines">If false, coroutines would not stop (used for stopping the game in the Unity editor)</param>
         public void CloseImmidiately(bool stopCoroutines=true)
         {
-            JsonRpcClient.CloseImmidiately();
-
             if (Authorized && stopCoroutines)
             {
-                EndAuthorizationContext();
-                CoroutineManager.StopCoroutine(_processBulkRequestCoroutine);
-                CoroutineManager.StopCoroutine(_trackContextDataCoroutine);
+                if (_authorizationContext != null)
+                    EndAuthorizationContext();
+
+                if (_processBulkRequestCoroutine != null)
+                    CoroutineManager.StopCoroutine(_processBulkRequestCoroutine);
+
+                if (_trackContextDataCoroutine != null)
+                    CoroutineManager.StopCoroutine(_trackContextDataCoroutine);
             }
+
+            JsonRpcClient.CloseImmidiately();
         }
 
         public IEnumerator Send<TRequest, TResponse>(TRequest request, bool immediately = false)
@@ -134,14 +166,24 @@ namespace RData
         private void EndAuthorizationContext()
         {
             EndContext(_authorizationContext);
-            _authorizationContext = null;
             LocalDataRepository.RemoveData(UserId, typeof(AuthorizationContext).Name);
+        }
+
+        /// <summary>
+        /// Waits for all user data chunks to be sent to the server
+        /// </summary>
+        private IEnumerator WaitForAllChunksToBeProcessed()
+        {
+            while (LocalDataRepository.LoadDataChunksJson(UserId).ToList().Count > 0)
+                yield return null;
         }
 
         private IEnumerator ProcessBulkedRequests()
         {
             while (true)
             {
+                //Debug.Log(DateTime.UtcNow + ": Checking bulked requests");
+
                 // When available, authorized, and root context is restored try to send out chunks
                 if (IsAvailable && Authorized && _authorizationContext.Status != RDataContextStatus.Interrupted)
                 {
@@ -149,8 +191,11 @@ namespace RData
                     var localDataChunks = LocalDataRepository.LoadDataChunksJson(UserId);
                     foreach (var chunk in localDataChunks)
                     {
+                        Debug.Log(DateTime.UtcNow + ": Sending the chunk " + chunk.requestId);
                         yield return CoroutineManager.StartCoroutine(JsonRpcClient.SendJson<BooleanResponse>(chunk.requestJson, chunk.requestId, (response) =>
                         {
+                            Debug.Log(DateTime.UtcNow + ": Sent the chunk " + chunk.requestId);
+
                             if (response.Result)
                                 LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId); // At this point we received a positive answer from the server
 
@@ -175,7 +220,10 @@ namespace RData
                         // If any unknown errors happened this means that most likely something horribly wrong with the server.
                         // Let's take some timeout to prevent spamming it
                         if (hasErrors)
+                        {
+                            Debug.Log(DateTime.UtcNow + ": Unknown error happened, waiting for " + kTimeoutAfterError + " seconds");
                             yield return new WaitForSeconds(kTimeoutAfterError);
+                        }
                     }
 
                     // Check if the current chunk has items and expired. If so, save and refresh it
@@ -210,34 +258,41 @@ namespace RData
         private void EndInterruptedAuthorizationContext()
         {
             _authorizationContext = LocalDataRepository.LoadData<AuthorizationContext>(UserId, typeof(AuthorizationContext).Name); // Load previously saved authorization context
-
-            if(_authorizationContext != null)
+            
+            if (_authorizationContext != null)
                 EndAuthorizationContext(); // End it
         }
 
         private IEnumerator TrackContextDataCoroutine()
         {
-            Queue<RDataBaseContext> queue = new Queue<RDataBaseContext>();
+            _contextTreeTraversalHelperQueue = new Queue<RDataBaseContext>();
 
             while (true)
             {
-                // Traverse the context tree breadth-first and find new changes in the context data
-                queue.Enqueue(_authorizationContext);
-                while(queue.Count > 0)
-                {
-                    RDataBaseContext current = queue.Dequeue();
-                    foreach(var kvp in current.GetUpdatedFields())
-                    {
-                        Debug.Log("<color=teal>Data updated in context, key = " + kvp.Key + ", value = " + kvp.Value + " </color>");
-                        UpdateContextData(current, kvp.Key, kvp.Value);
-                    }
+                CheckContextDataUpdates();
+                yield return new WaitForSeconds(ContextDataTrackRefreshTime);
+            }
+        }
 
-                    foreach (var child in current.Children)
-                        if(child.Status == RDataContextStatus.Started)
-                            queue.Enqueue(child);
+        private void CheckContextDataUpdates()
+        {
+            if (_contextTreeTraversalHelperQueue.Count > 0)
+                throw new RDataException("CheckContextDataUpdates() was called in the middle of the context tree traversal. That is a bug and should never happen.");
+
+            // Traverse the context tree breadth-first and find new changes in the context data
+            _contextTreeTraversalHelperQueue.Enqueue(_authorizationContext);
+            while (_contextTreeTraversalHelperQueue.Count > 0)
+            {
+                RDataBaseContext current = _contextTreeTraversalHelperQueue.Dequeue();
+                foreach (var kvp in current.GetUpdatedFields())
+                {
+                    Debug.Log("<color=teal>Data updated in context " + current.Name + " , key=" + kvp.Key + ", value=" + kvp.Value + " </color>");
+                    UpdateContextData(current, kvp.Key, kvp.Value);
                 }
 
-                yield return new WaitForSeconds(ContextDataTrackRefreshTime);
+                foreach (var child in current.Children)
+                    if (child.Status == RDataContextStatus.Started)
+                        _contextTreeTraversalHelperQueue.Enqueue(child);
             }
         }
 
@@ -246,6 +301,9 @@ namespace RData
             yield return CoroutineManager.StartCoroutine(AuthorizationStrategy.Authorize());
         }
 
+        /// <summary>
+        /// This is called by the AuthorizationStrategy when it finishes the authorization
+        /// </summary>
         public virtual void OnAuthorized()
         {
             // Initialize events
@@ -266,6 +324,7 @@ namespace RData
         }
                 
         public void LogEvent<TEventData>(RDataEvent<TEventData> evt, bool immediately = false)
+            where TEventData : class, new()
         {
             if (!Authorized)
                 throw new RDataException("Failed to log event " + evt.Name + ", not authorized");
@@ -304,7 +363,9 @@ namespace RData
             if (!Authorized)
                 throw new RDataException("Failed to end context " + context.Name + ", not authorized");
 
-            context.End();
+            CheckContextDataUpdates(); // Check the updates of the context data first
+
+            context.End(); // Then, end the context
 
             var request = new Requests.Contexts.EndContextRequest(context);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.EndContextRequest, BooleanResponse>(request, immediately));

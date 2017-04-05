@@ -10,20 +10,20 @@ namespace RData.Contexts
     /// for the Context
     /// </summary>
     /// <typeparam name="TContextData">Type of context data</typeparam>
-    public class RDataContext<TContextData> : RDataBaseContext
+    public abstract class RDataContext<TContextData> : RDataBaseContext
         where TContextData : class, new()
     {
         private const int FieldTrackingDepth = 100; // Snouldn't be ever close to this, this means that class we are trying to track is referencing itself. Don't do it!
-
-        public TContextData Data { get; set; }
+        
+        public TContextData Data { get; private set; } // Private set to prevent people from setting it directly (use constructor chaining to create a context with pre-defined data)
         
         private List<TrackedField> _trackedFields = new List<TrackedField>();
 
-        public RDataContext(string id, string name, string parentContextId, TContextData data, RDataContextStatus status, System.DateTime timeStarted, System.DateTime timeEnded)
+        public RDataContext(string id, RDataBaseContext parentContext, TContextData data, RDataContextStatus status, System.DateTime timeStarted, System.DateTime timeEnded)
         {
             Id = id;
-            Name = name;
-            ParentContextId = parentContextId;
+            Name = GetType().Name;
+            Parent = parentContext;
             Data = data;
 
             Status = status;
@@ -34,6 +34,16 @@ namespace RData.Contexts
 
             // Build the tracked fields dictionary
             CheckFieldsForTracking(Data, typeof(TContextData));
+        }
+
+        public RDataContext(TContextData data, RDataBaseContext parentContext = null) :
+            this(System.Guid.NewGuid().ToString(), parentContext, data, RDataContextStatus.Started, System.DateTime.UtcNow, default(System.DateTime))
+        {
+        }
+
+        public RDataContext() : 
+            this(new TContextData())
+        {
         }
 
         private void CheckFieldsForTracking(object obj, Type type = null, string keyPrefix = null, int depth = 0)
@@ -59,24 +69,17 @@ namespace RData.Contexts
             }
         }
 
-        public RDataContext(TContextData data, RDataBaseContext parentContext = null) :
-            this(System.Guid.NewGuid().ToString(), typeof(TContextData).Name, (parentContext != null ? parentContext.Id : null), data, RDataContextStatus.Started, System.DateTime.UtcNow, default(System.DateTime))
-        {
-        }
-
-        public RDataContext() : 
-            this(new TContextData())
-        {
-        }
-
         public override void End()
         {
             // End children contexts
             foreach (var childContext in Children)
                 childContext.End();
-
+            
             Status = RDataContextStatus.Ended;
             TimeEnded = System.DateTime.UtcNow;
+
+            if(Parent != null)
+                Parent.RemoveChild(this);
         }
 
         public override void Restore()
@@ -88,7 +91,12 @@ namespace RData.Contexts
         public override void AddChild(RDataBaseContext context)
         {
             Children.Add(context);
-            context.ParentContextId = Id;
+            context.Parent = this;
+        }
+        
+        public override void RemoveChild(RDataBaseContext context)
+        {
+            Children.Remove(context);
         }
 
         public override IEnumerable<KeyValuePair<string, object>> GetUpdatedFields()
