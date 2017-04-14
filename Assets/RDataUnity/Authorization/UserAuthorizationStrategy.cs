@@ -43,6 +43,11 @@ namespace RData.Authorization
             yield return CoroutineManager.StartCoroutine(SendAuthorizationRequest(UserId, _client.GameVersion));
         }
 
+        public void ResetAuthorization()
+        {
+            Authorized = false;
+        }
+
         private IEnumerator SendAuthorizationRequest(string userId, int gameVersion)
         {
             var request = new Requests.User.AuthorizationRequest(userId, gameVersion);
@@ -57,5 +62,6 @@ namespace RData.Authorization
                 UserId = userId;
             }
         }
+
     }
 }

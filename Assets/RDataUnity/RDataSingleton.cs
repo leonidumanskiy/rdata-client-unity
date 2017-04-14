@@ -104,8 +104,11 @@ namespace RData
 
         public IEnumerator Restart()
         {
-            yield return _client.Close();
+            Debug.Log("Restart - Closing");
+            yield return StartCoroutine(_client.Close());
+            Debug.Log("Restart - connecting");
             yield return StartCoroutine(_client.Open(HostName, m_waitUntilConnected, m_waitTimeout));
+            Debug.Log("Restart - connected");
         }
 
         void OnDestroy()

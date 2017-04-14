@@ -13,5 +13,6 @@ namespace RData.Authorization
 
         IEnumerator Authorize(); // Called by the user when user calls Client.Authorize()     
         IEnumerator RestoreAuthorization();  // Called by the RDataClient when it reconnects and needs to re-authorize
+        void ResetAuthorization();
     }
 }

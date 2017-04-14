@@ -96,6 +96,13 @@ namespace RData
 
                 if (_trackContextDataCoroutine != null)
                     CoroutineManager.StopCoroutine(_trackContextDataCoroutine);
+
+                // Unsubscribe from events
+                JsonRpcClient.OnLostConnection -= OnLostConnection;
+                JsonRpcClient.OnReconnected -= OnReconnected;
+
+                // Reset Authorized on the AuthorizationStartategy
+                AuthorizationStrategy.ResetAuthorization();
             }
 
             yield return CoroutineManager.StartCoroutine(JsonRpcClient.Close());
@@ -117,6 +124,10 @@ namespace RData
 
                 if (_trackContextDataCoroutine != null)
                     CoroutineManager.StopCoroutine(_trackContextDataCoroutine);
+
+                // Unsubscribe from events
+                JsonRpcClient.OnLostConnection -= OnLostConnection;
+                JsonRpcClient.OnReconnected -= OnReconnected;
             }
 
             JsonRpcClient.CloseImmidiately();
