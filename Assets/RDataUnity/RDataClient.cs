@@ -21,10 +21,12 @@ namespace RData
     {
         private const string kContextValidationError = "Context validation failed";
 
-        // If sending a chunk results in an unknown error, this means something wrong with the server. 
-        // To prevent spamming the server, take this timeout before re-trying to send a chunk
+        /// <summary>
+        /// If sending a chunk results in an unknown error, this means something wrong with the server. 
+        /// To prevent spamming the server, take this timeout before re-trying to send a chunk
+        /// </summary>
         private const float kTimeoutAfterError = 5.0f;
-
+        
         public IJsonRpcClient JsonRpcClient { get; set; }
 
         public ILocalDataRepository LocalDataRepository { get; set; }
@@ -189,40 +191,44 @@ namespace RData
                 {
                     bool hasErrors = false;
                     var localDataChunks = LocalDataRepository.LoadDataChunksJson(UserId);
-                    foreach (var chunk in localDataChunks)
-                    {
-                        Debug.Log(DateTime.UtcNow + ": Sending the chunk " + chunk.requestId);
-                        yield return CoroutineManager.StartCoroutine(JsonRpcClient.SendJson<BooleanResponse>(chunk.requestJson, chunk.requestId, (response) =>
-                        {
-                            Debug.Log(DateTime.UtcNow + ": Sent the chunk " + chunk.requestId);
 
-                            if (response.Result)
-                                LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId); // At this point we received a positive answer from the server
+                    if (localDataChunks != null)
+                    {
+                        foreach (var chunk in localDataChunks)
+                        {
+                            Debug.Log(DateTime.UtcNow + ": Sending the chunk " + chunk.requestId);
+                            yield return CoroutineManager.StartCoroutine(JsonRpcClient.SendJson<BooleanResponse>(chunk.requestJson, chunk.requestId, (response) =>
+                            {
+                                Debug.Log(DateTime.UtcNow + ": Sent the chunk " + chunk.requestId);
+
+                                if (response.Result)
+                                    LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId); // At this point we received a positive answer from the server
 
                             // Most realistic scenario here is 
                             if (response.HasError)
-                            {
-                                if(response.Error.Data == kContextValidationError)
                                 {
+                                    if (response.Error.Data == kContextValidationError)
+                                    {
                                     // This is a very specific case that happens when we are trying to re-send a chunk with context operations after that context was closed.
                                     // This means this chunk was already received by the server and we can safely delete it.
                                     LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId);
-                                    Debug.LogError("Context validation error. This chunk was already received by the server. Deletting the chunk");
+                                        Debug.LogError("Context validation error. This chunk was already received by the server. Deletting the chunk");
+                                    }
+                                    else
+                                    {
+                                        hasErrors = true;
+                                    }
                                 }
-                                else
-                                {
-                                    hasErrors = true;
-                                }
+
+                            }));
+
+                            // If any unknown errors happened this means that most likely something horribly wrong with the server.
+                            // Let's take some timeout to prevent spamming it
+                            if (hasErrors)
+                            {
+                                Debug.Log(DateTime.UtcNow + ": Unknown error happened, waiting for " + kTimeoutAfterError + " seconds");
+                                yield return new WaitForSeconds(kTimeoutAfterError);
                             }
-
-                        }));
-
-                        // If any unknown errors happened this means that most likely something horribly wrong with the server.
-                        // Let's take some timeout to prevent spamming it
-                        if (hasErrors)
-                        {
-                            Debug.Log(DateTime.UtcNow + ": Unknown error happened, waiting for " + kTimeoutAfterError + " seconds");
-                            yield return new WaitForSeconds(kTimeoutAfterError);
                         }
                     }
 

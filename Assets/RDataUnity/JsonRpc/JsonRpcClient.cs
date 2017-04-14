@@ -18,16 +18,16 @@ namespace RData.JsonRpc
         private float _reconnectTimeout = 5;
 
         private bool _closed = false;
-
-        private volatile bool _lostConnection = false;
-
+        
         public event Action OnLostConnection;
 
         public event Action OnReconnected;
 
+        private volatile bool _isConnected;
+
         public bool IsAvailable
         {
-            get { return _webSocket != null && _webSocket.IsAlive; }
+            get { return _webSocket != null && _isConnected; }
         }
 
         public IEnumerator Open(string hostName, bool waitUntilConnected = true, double waitTimeout = 3d)
@@ -65,7 +65,7 @@ namespace RData.JsonRpc
                     if (_closed)
                         break;
 
-                    if (_lostConnection)
+                    if (!IsAvailable)
                     {
                         Debug.Log("Must reconnect. Reconnecting...");
                         _webSocket.ConnectAsync();
@@ -78,11 +78,13 @@ namespace RData.JsonRpc
 
                         if (IsAvailable)
                         {
-                            _lostConnection = false;
                             Debug.Log("Successfully reconencted to websocket server.");
 
                             if (OnReconnected != null)
                                 OnReconnected();
+                        } else
+                        {
+                            Debug.LogError("Failed to reconnect.");
                         }
                     }
                     yield return null;
@@ -192,20 +194,21 @@ namespace RData.JsonRpc
 
         private void OnWebsocketConnected(object sender, EventArgs e)
         {
+            _isConnected = true;
             Debug.Log("Websocket connected");
         }
 
         private void OnWebsocketDisconnected(object sender, CloseEventArgs e)
         {
+            _isConnected = false;
+
             if (_closed)
                 return;
-
-            _lostConnection = true;
+            
             Debug.Log("Websocket disconnected");
 
             if(OnLostConnection != null)
                 OnLostConnection();
-
         }
 
         private void OnWebsocketError(object sender, ErrorEventArgs e)
