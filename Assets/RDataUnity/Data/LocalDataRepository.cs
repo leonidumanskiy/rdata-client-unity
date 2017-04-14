@@ -60,6 +60,9 @@ namespace RData.Data
 
         public void SaveDataChunk(string userId, BulkRequest dataChunk)
         {
+            // First, load the cache
+            EnsureDataChunksCacheLoaded(userId);
+
             // Save on the disk
             EnsureChunksDirectoryExists(userId);
             var json = RData.LitJson.JsonMapper.ToJson(dataChunk);
@@ -67,7 +70,6 @@ namespace RData.Data
             File.WriteAllText(path, json);
 
             // Save into the cache
-            EnsureDataChunksCacheLoaded(userId);
             var chunkInfo = new LocalDataChunkInfo() { requestCreatedAt = dataChunk.CreatedAt, requestId = dataChunk.Id, requestJson = json };
             _dataChunksCache[userId].Add(dataChunk.Id, chunkInfo);
         }

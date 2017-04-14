@@ -168,6 +168,8 @@ namespace RData
         private void EndAuthorizationContext()
         {
             EndContext(_authorizationContext);
+            ResetActiveChunk(); // In case if this context end fails, this will fail next authorizaiton context. Prevent it by putting them into different chunks
+
             LocalDataRepository.RemoveData(UserId, typeof(AuthorizationContext).Name);
         }
 
@@ -204,14 +206,14 @@ namespace RData
                                 if (response.Result)
                                     LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId); // At this point we received a positive answer from the server
 
-                            // Most realistic scenario here is 
-                            if (response.HasError)
+                                // Most realistic scenario here is 
+                                if (response.HasError)
                                 {
                                     if (response.Error.Data == kContextValidationError)
                                     {
-                                    // This is a very specific case that happens when we are trying to re-send a chunk with context operations after that context was closed.
-                                    // This means this chunk was already received by the server and we can safely delete it.
-                                    LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId);
+                                        // This is a very specific case that happens when we are trying to re-send a chunk with context operations after that context was closed.
+                                        // This means this chunk was already received by the server and we can safely delete it.
+                                        LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId);
                                         Debug.LogError("Context validation error. This chunk was already received by the server. Deletting the chunk");
                                     }
                                     else

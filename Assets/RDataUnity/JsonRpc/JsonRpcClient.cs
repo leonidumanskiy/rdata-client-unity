@@ -57,9 +57,7 @@ namespace RData.JsonRpc
                 _webSocket.OnMessage += OnWebsocketMessage;
                 _webSocket.OnClose += OnWebsocketDisconnected;
                 _webSocket.OnError += OnWebsocketError;
-
-                _webSocket.ConnectAsync();
-
+                
                 while (true)
                 {
                     if (_closed)
@@ -67,7 +65,7 @@ namespace RData.JsonRpc
 
                     if (!IsAvailable)
                     {
-                        Debug.Log("Must reconnect. Reconnecting...");
+                        Debug.Log("Connecting to the websocket server...");
                         _webSocket.ConnectAsync();
 
                         var now = DateTime.UtcNow;
@@ -78,13 +76,13 @@ namespace RData.JsonRpc
 
                         if (IsAvailable)
                         {
-                            Debug.Log("Successfully reconencted to websocket server.");
+                            Debug.Log("Successfully reconnected to the websocket server.");
 
                             if (OnReconnected != null)
                                 OnReconnected();
                         } else
                         {
-                            Debug.LogError("Failed to reconnect.");
+                            Debug.LogError("Failed to reconnect to the websocket server.");
                         }
                     }
                     yield return null;
