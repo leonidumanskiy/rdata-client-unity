@@ -39,6 +39,8 @@ namespace RData
 
         public float ContextDataTrackRefreshTime { get; set; }
 
+        public bool SupressNonAuthorizedException { get; set; }
+
         public JsonRpcError<string> LastError { get; private set; }
 
         public bool IsAvailable
@@ -64,6 +66,7 @@ namespace RData
             ChunkLifeTime = 1f; // 1 second
             ContextDataTrackRefreshTime = 0.100f; // 100 milliseconds
             GameVersion = 1;
+            SupressNonAuthorizedException = false;
 
             LocalDataRepository = new LocalDataRepository(); // Instantiate the local data repository
             AuthorizationStrategy = new UserAuthorizationStrategy(this); // Instantiate the user authorization strategy
@@ -315,6 +318,31 @@ namespace RData
             }
         }
 
+        /// <summary>
+        /// Checks if the client is authorized, and either 
+        /// throws a NonAuthorizedException or calls a Debug.LogWarning 
+        /// based on the SupressNonAuthorizedException setting
+        /// </summary>
+        /// <param name="str">Action string</param>
+        /// <returns></returns>
+        private bool CheckAuthorized(string str = "execute RDataClient method")
+        {
+            if (!Authorized)
+            {
+                var err = "Failed to " + str + ", not authorized";
+                if (!SupressNonAuthorizedException)
+                {
+                    throw new NonAuthorizedException(err);
+                }
+                else
+                {
+                    Debug.LogWarning(err);
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public virtual IEnumerator Authorize()
         {
             yield return CoroutineManager.StartCoroutine(AuthorizationStrategy.Authorize());
@@ -345,8 +373,8 @@ namespace RData
         public void LogEvent<TEventData>(RDataEvent<TEventData> evt, bool immediately = false)
             where TEventData : class, new()
         {
-            if (!Authorized)
-                throw new RDataException("Failed to log event " + evt.Name + ", not authorized");
+            if (!CheckAuthorized("log event " + evt.Name))
+                return;
 
             var request = new Requests.Events.LogEventRequest<TEventData>(evt);
             CoroutineManager.StartCoroutine(Send<Requests.Events.LogEventRequest<TEventData>, BooleanResponse>(request, immediately));
@@ -355,8 +383,8 @@ namespace RData
         public void StartContext<TContextData>(RDataContext<TContextData> context, RDataBaseContext parentContext = null, bool immediately = false)
             where TContextData : class, new()
         {
-            if (!Authorized)
-                throw new RDataException("Failed to start context " + context.Name  + ", not authorized");
+            if (!CheckAuthorized("start context " + context.Name))
+                return;
 
             if (parentContext == null)
                 parentContext = _authorizationContext;
@@ -370,8 +398,8 @@ namespace RData
         private void StartRootContext<TContextData>(RDataContext<TContextData> context, bool immediately = false)
             where TContextData : class, new()
         {
-            if (!Authorized)
-                throw new RDataException("Failed to start root context " + context.Name + ", not authorized");
+            if (!CheckAuthorized("start root context " + context.Name))
+                return;
 
             var request = new Requests.Contexts.StartContextRequest<TContextData>(context);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.StartContextRequest<TContextData>, BooleanResponse>(request, immediately));
@@ -379,8 +407,8 @@ namespace RData
 
         public void EndContext(RDataBaseContext context, bool immediately = false)
         {
-            if (!Authorized)
-                throw new RDataException("Failed to end context " + context.Name + ", not authorized");
+            if (!CheckAuthorized("end context " + context.Name))
+                return;
 
             CheckContextDataUpdates(); // Check the updates of the context data first
 
@@ -392,8 +420,8 @@ namespace RData
 
         public void RestoreContext(RDataBaseContext context, bool immediately = false)
         {
-            if (!Authorized)
-                throw new RDataException("Failed to restore context " + context.Name + ", not authorized");
+            if (!CheckAuthorized("restore context " + context.Name))
+                return;
 
             var request = new Requests.Contexts.RestoreContextRequest(context);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.RestoreContextRequest, BooleanResponse>(request, immediately));
@@ -402,8 +430,8 @@ namespace RData
         public void SetContextData<TContextData>(RDataContext<TContextData> context, TContextData data, bool immediately = false)
             where TContextData : class, new()
         {
-            if (!Authorized)
-                throw new RDataException("Failed to set data for context " + context.Name + ", not authorized");
+            if (!CheckAuthorized("set data for context " + context.Name))
+                return;
 
             var request = new Requests.Contexts.SetContextDataRequest<TContextData>(context, data, Tools.Time.UnixTimeMilliseconds);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.SetContextDataRequest<TContextData>, BooleanResponse>(request, immediately));
@@ -411,8 +439,8 @@ namespace RData
 
         public void UpdateContextData(RDataBaseContext context, string key, object value, bool immediately = false)
         {
-            if (!Authorized)
-                throw new RDataException("Failed to set data for context " + context.Name + ", not authorized");
+            if (!CheckAuthorized("update data for context " + context.Name))
+                return;
 
             var request = new Requests.Contexts.UpdateContextDataVariableRequest(context, key, value, Tools.Time.UnixTimeMilliseconds);
             CoroutineManager.StartCoroutine(Send<Requests.Contexts.UpdateContextDataVariableRequest, BooleanResponse>(request, immediately));

@@ -72,8 +72,11 @@ namespace RData.Contexts
         public override void End()
         {
             // End children contexts
-            foreach (var childContext in Children)
+            for (int i = Children.Count-1; i >= 0; i--)
+            {
+                var childContext = Children[i];
                 childContext.End();
+            }
             
             Status = RDataContextStatus.Ended;
             TimeEnded = System.DateTime.UtcNow;

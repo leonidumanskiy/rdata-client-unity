@@ -65,6 +65,7 @@
     <Compile Include="Assets\RDataUnity\Events\RDataEvent.cs" />
     <Compile Include="Assets\RDataUnity\Examples\ContextDataTracking\ContextDataTrackingGameManager.cs" />
     <Compile Include="Assets\RDataUnity\Examples\UI\UiGameManager.cs" />
+    <Compile Include="Assets\RDataUnity\Exceptions\NonAuthorizedException.cs" />
     <Compile Include="Assets\RDataUnity\Exceptions\RDataException.cs" />
     <Compile Include="Assets\RDataUnity\JsonRpc\IJsonRpcClient.cs" />
     <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcBaseRequest.cs" />

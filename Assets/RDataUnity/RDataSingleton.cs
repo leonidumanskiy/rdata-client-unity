@@ -13,6 +13,9 @@ namespace RData
         public string m_hostNameTesting = "";
         public string m_hostNameProduction = "";
 
+        // No game by default. This is used to check the game role when building the list of groups.
+        // This is temporary and will be replaced with "get my groups" request from the User server
+        public string m_game = "";
         public int m_gameVersion = 1;
 
         public bool m_waitUntilConnected = true;
