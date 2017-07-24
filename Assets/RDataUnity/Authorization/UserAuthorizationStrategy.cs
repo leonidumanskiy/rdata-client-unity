@@ -16,7 +16,7 @@ namespace RData.Authorization
 
         public string UserId { get; set; }
 
-        public JsonRpcError<string> LastError { get; private set; }
+        public RDataException LastError { get; private set; }
 
         public UserAuthorizationStrategy(RDataClient client)
         {
@@ -26,10 +26,16 @@ namespace RData.Authorization
         public IEnumerator Authorize()
         {
             if (_client.Authorized)
-                throw new RDataException("Already authorized");
+            {
+                LastError = new RDataException("Already authorized");
+                yield break;
+            }
 
             if (string.IsNullOrEmpty(UserId))
-                throw new RDataException("You must set the user id on the authorization strategy to authorize");
+            {
+                LastError = new RDataException("You must set the user id on the authorization strategy to authorize");
+                yield break;
+            }
 
             yield return CoroutineManager.StartCoroutine(SendAuthorizationRequest(UserId, _client.GameVersion));
 
@@ -54,7 +60,7 @@ namespace RData.Authorization
             yield return CoroutineManager.StartCoroutine(_client.Send<Requests.User.AuthorizationRequest, BooleanResponse>(request));
             if (request.Response.HasError)
             {
-                LastError = request.Response.Error;
+                LastError = new RDataException(request.Response.Error);
             }
             else
             {
