@@ -87,13 +87,14 @@ namespace RData
                 // End the root context
                 if (_authorizationContext != null)
                     EndAuthorizationContext();
-
+                
                 // Force client to send the data to the server immidiately, ignore the ChunkLifeTime and chunk max length
                 ResetActiveChunk();
 
-                // Wait for the next ProcessBulkedRequests call to send the chunk
-                yield return CoroutineManager.StartCoroutine(WaitForAllChunksToBeProcessed());
-
+                // Wait for the next ProcessBulkedRequests call to send the chunk - IF there is a net connection
+                if(IsAvailable)
+                    yield return CoroutineManager.StartCoroutine(WaitForAllChunksToBeProcessed());
+                
                 if (_processBulkRequestCoroutine != null)
                     CoroutineManager.StopCoroutine(_processBulkRequestCoroutine);
 
