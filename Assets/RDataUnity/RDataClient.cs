@@ -26,6 +26,8 @@ namespace RData
         /// To prevent spamming the server, take this timeout before re-trying to send a chunk
         /// </summary>
         private const float kTimeoutAfterError = 5.0f;
+
+        private float chunkTimer = 5f;
         
         public IJsonRpcClient JsonRpcClient { get; set; }
 
@@ -193,7 +195,8 @@ namespace RData
         /// </summary>
         private IEnumerator WaitForAllChunksToBeProcessed()
         {
-            while (LocalDataRepository.LoadDataChunksJson(UserId).ToList().Count > 0)
+            float startTime = Time.time;
+            while (LocalDataRepository.LoadDataChunksJson(UserId).ToList().Count > 0 && Time.time < startTime + chunkTimer)
                 yield return null;
         }
 
