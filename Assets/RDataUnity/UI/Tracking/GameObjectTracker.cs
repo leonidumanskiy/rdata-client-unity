@@ -59,7 +59,8 @@ namespace RData.Ui.Tracking
         {
             if (string.IsNullOrEmpty(_gameObjectGuid)) // If guid is null or empty, generate a new one
             {
-                Debug.Log("Generating new guid for " + gameObject.name);
+                if (RData.RDataLogging.DoLog)
+                    Debug.Log("Generating new guid for " + gameObject.name);
                 _gameObjectGuid = Guid.NewGuid().ToString();
             }
             else // If Object was copied and pasted, check if it's guid does not match existing guids
@@ -70,7 +71,8 @@ namespace RData.Ui.Tracking
                 {
                     if (tracker != this && _gameObjectGuid == tracker.GameObjectGuid)
                     {
-                        Debug.Log("Regenerating guid for " + gameObject.name);
+                        if (RData.RDataLogging.DoLog)
+                            Debug.Log("Regenerating guid for " + gameObject.name);
                         _gameObjectGuid = Guid.NewGuid().ToString();
                     }
                 }
@@ -94,7 +96,8 @@ namespace RData.Ui.Tracking
             _context = new GameObjectActiveContext(GameObjectGuid, gameObject.name, GameObjectHelper.GetGameObjectPath(transform));
 
             RDataSingleton.Client.StartContext(_context, _parentTracker != null ? _parentTracker.Context : null);
-            Debug.Log("Start context for " + gameObject.name + " parent = " + (_parentTracker == null ? null : _parentTracker.gameObject.name));
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("Start context for " + gameObject.name + " parent = " + (_parentTracker == null ? null : _parentTracker.gameObject.name));
         }
 
         protected void EndGameObjectActiveContext()
@@ -104,7 +107,8 @@ namespace RData.Ui.Tracking
 
             RDataSingleton.Client.EndContext(_context);
             _context = null;
-            Debug.Log("End context for " + gameObject.name);
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("End context for " + gameObject.name);
         }
     }
 }

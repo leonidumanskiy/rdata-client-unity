@@ -97,21 +97,26 @@ namespace RData
 
             if (_client.IsAvailable)
             {
-                Debug.Log("Connected to the data collection server");
+                if (RData.RDataLogging.DoLog)
+                    Debug.Log("Connected to the data collection server");
             }
             else
             {
-                Debug.Log("Data collection server is not available. We will reconnect to it when it is available again.");
+                if (RData.RDataLogging.DoLog)
+                    Debug.Log("Data collection server is not available. We will reconnect to it when it is available again.");
             }
         }
 
         public IEnumerator Restart()
         {
-            Debug.Log("Restart - Closing");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("Restart - Closing");
             yield return StartCoroutine(_client.Close());
-            Debug.Log("Restart - connecting");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("Restart - connecting");
             yield return StartCoroutine(_client.Open(HostName, m_waitUntilConnected, m_waitTimeout));
-            Debug.Log("Restart - connected");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("Restart - connected");
         }
 
         void OnDestroy()
@@ -120,7 +125,8 @@ namespace RData
                 return;
 
             _client.CloseImmidiately(!_isApplicationQuitting);
-            Debug.Log(this.GetType().Name + " was destroyed");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log(this.GetType().Name + " was destroyed");
         }
     }
 }

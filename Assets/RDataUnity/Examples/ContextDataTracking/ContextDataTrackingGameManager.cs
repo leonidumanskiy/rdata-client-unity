@@ -42,15 +42,18 @@ namespace RData.Examples.ContextDataTracking
 
             var testContext = new MyContext();
             RDataSingleton.Client.StartContext(testContext);
-            Debug.Log("<color=yellow>Starting MyContext</color>");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("<color=yellow>Starting MyContext</color>");
             for (int i = 1; i < 6; i++)
             {
                 yield return new WaitForSeconds(2f);
                 testContext.Data.test.someNumber = i;
-                Debug.Log("<color=yellow>Updating test.someNumber to " + testContext.Data.test.someNumber + ", i = " + i + "</color>");
+                if (RData.RDataLogging.DoLog)
+                    Debug.Log("<color=yellow>Updating test.someNumber to " + testContext.Data.test.someNumber + ", i = " + i + "</color>");
                 yield return new WaitForSeconds(3f);
             }
-            Debug.Log("<color=yellow>Ending MyContext</color>");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("<color=yellow>Ending MyContext</color>");
             RDataSingleton.Client.EndContext(testContext);
 
         }

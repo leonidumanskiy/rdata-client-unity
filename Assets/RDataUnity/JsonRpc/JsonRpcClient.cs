@@ -65,7 +65,8 @@ namespace RData.JsonRpc
 
                     if (!IsAvailable)
                     {
-                        Debug.Log("Connecting to the websocket server...");
+                        if (RData.RDataLogging.DoLog)
+                            Debug.Log("Connecting to the websocket server...");
                         _webSocket.ConnectAsync();
 
                         var now = DateTime.UtcNow;
@@ -76,13 +77,15 @@ namespace RData.JsonRpc
 
                         if (IsAvailable)
                         {
-                            Debug.Log("Successfully reconnected to the websocket server.");
+                            if (RData.RDataLogging.DoLog)
+                                Debug.Log("Successfully reconnected to the websocket server.");
 
                             if (OnReconnected != null)
                                 OnReconnected();
                         } else
                         {
-                            Debug.LogError("Failed to reconnect to the websocket server.");
+                            if (RData.RDataLogging.DoError)
+                                Debug.LogError("Failed to reconnect to the websocket server.");
                         }
                     }
                     yield return null;
@@ -90,7 +93,8 @@ namespace RData.JsonRpc
             }
 
             // Any cleanup needed goes here
-            Debug.Log("Websocket object destroyed");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("Websocket object destroyed");
         }
 
         public IEnumerator Close()
@@ -116,7 +120,8 @@ namespace RData.JsonRpc
 
             string id = request.Id;
             string message = RData.LitJson.JsonMapper.ToJson(request);
-            Debug.Log("<color=olive>RData Send: " + message + "</color>");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("<color=olive>RData Send: " + message + "</color>");
             lock (_responses)
             {
                 _responses.Add(id, null);
@@ -153,7 +158,8 @@ namespace RData.JsonRpc
         public IEnumerator SendJson<TResponse>(string message, string id, Action<TResponse> onResponse)
             where TResponse : JsonRpcBaseResponse
         {
-            Debug.Log("<color=olive>RData Send: " + message + "</color>");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("<color=olive>RData Send: " + message + "</color>");
 
             lock (_responses)
             {
@@ -193,7 +199,8 @@ namespace RData.JsonRpc
         private void OnWebsocketConnected(object sender, EventArgs e)
         {
             _isConnected = true;
-            Debug.Log("Websocket connected");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("Websocket connected");
         }
 
         private void OnWebsocketDisconnected(object sender, CloseEventArgs e)
@@ -203,7 +210,8 @@ namespace RData.JsonRpc
             if (_closed)
                 return;
             
-            Debug.Log("Websocket disconnected");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("Websocket disconnected");
 
             if(OnLostConnection != null)
                 OnLostConnection();
@@ -211,19 +219,22 @@ namespace RData.JsonRpc
 
         private void OnWebsocketError(object sender, ErrorEventArgs e)
         {
-            Debug.Log("WebSocket error: " + e.Message);
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("WebSocket error: " + e.Message);
         }
 
         private void OnWebsocketMessage(object sender, MessageEventArgs e)
         {
-            Debug.Log("<color=green>RData Recv: " + e.Data + "</color>");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("<color=green>RData Recv: " + e.Data + "</color>");
 
             var response = RData.LitJson.JsonMapper.ToObject<JsonRpcBaseResponse>(e.Data);
             lock (_responses)
             {
                 if (!_responses.ContainsKey(response.Id))
                     //throw new JsonRpcException("Response with that id wasn't expected");
-                    Debug.Log("Response with that id wasn't expected");
+                if (RData.RDataLogging.DoLog)
+                        Debug.Log("Response with that id wasn't expected");
 
                 _responses[response.Id] = e.Data;
             }
@@ -232,11 +243,20 @@ namespace RData.JsonRpc
         private void Log(LogData logData, string message)
         {
             if (logData.Level == LogLevel.Debug || logData.Level == LogLevel.Info || logData.Level == LogLevel.Trace)
-                Debug.Log(logData.Message);
+            {
+                if (RData.RDataLogging.DoLog)
+                    Debug.Log(logData.Message);
+            }
             else if (logData.Level == LogLevel.Warn)
-                Debug.LogWarning(logData.Message);
+            {
+                if (RData.RDataLogging.DoWarning)
+                    Debug.LogWarning(logData.Message);
+            }
             else if (logData.Level == LogLevel.Error || logData.Level == LogLevel.Fatal)
-                Debug.LogError(logData.Message);
+            {
+                if (RData.RDataLogging.DoError)
+                    Debug.LogError(logData.Message);
+            }
         }
     }
 }

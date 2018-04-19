@@ -17,7 +17,8 @@ namespace RData.Ui.Tracking
 
         private void Start()
         {
-            Debug.Log("Ui tracker start");
+            if (RData.RDataLogging.DoLog)
+                Debug.Log("Ui tracker start");
             _rdataClient = RDataSingleton.Client;
         }
 
@@ -69,7 +70,8 @@ namespace RData.Ui.Tracking
                 if (!isHit)
                     continue; // Redundant check, but who knows right?
 
-                Debug.Log("Clicked on " + tracker.gameObject.name + ", GameObjectGuid = " + tracker.GameObjectGuid + "; tracker.Context.Id = " + tracker.Context.Id + "; position.x = " + relativePosition.x + "; position.y = " + relativePosition.y);
+                if (RData.RDataLogging.DoLog)
+                    Debug.Log("Clicked on " + tracker.gameObject.name + ", GameObjectGuid = " + tracker.GameObjectGuid + "; tracker.Context.Id = " + tracker.Context.Id + "; position.x = " + relativePosition.x + "; position.y = " + relativePosition.y);
                 var evt = new UiClickEvent(tracker.GameObjectGuid, relativePosition.x, relativePosition.y, isTouch, tracker.Context);
                 RDataSingleton.Client.LogEvent(evt);
 

@@ -216,10 +216,12 @@ namespace RData
                     {
                         foreach (var chunk in localDataChunks)
                         {
-                            Debug.Log(DateTime.UtcNow + ": Sending the chunk " + chunk.requestId);
+                            if (RData.RDataLogging.DoLog)
+                                Debug.Log(DateTime.UtcNow + ": Sending the chunk " + chunk.requestId);
                             yield return CoroutineManager.StartCoroutine(JsonRpcClient.SendJson<BooleanResponse>(chunk.requestJson, chunk.requestId, (response) =>
                             {
-                                Debug.Log(DateTime.UtcNow + ": Sent the chunk " + chunk.requestId);
+                                if (RData.RDataLogging.DoLog)
+                                    Debug.Log(DateTime.UtcNow + ": Sent the chunk " + chunk.requestId);
 
                                 if (response.Result)
                                     LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId); // At this point we received a positive answer from the server
@@ -232,7 +234,8 @@ namespace RData
                                         // This is a very specific case that happens when we are trying to re-send a chunk with context operations after that context was closed.
                                         // This means this chunk was already received by the server and we can safely delete it.
                                         LocalDataRepository.RemoveDataChunk(UserId, chunk.requestId);
-                                        Debug.LogError("Context validation error. This chunk was already received by the server. Deletting the chunk");
+                                        if (RData.RDataLogging.DoError)
+                                            Debug.LogError("Context validation error. This chunk was already received by the server. Deletting the chunk");
                                     }
                                     else
                                     {
@@ -246,7 +249,8 @@ namespace RData
                             // Let's take some timeout to prevent spamming it
                             if (hasErrors)
                             {
-                                Debug.Log(DateTime.UtcNow + ": Unknown error happened, waiting for " + kTimeoutAfterError + " seconds");
+                                if (RData.RDataLogging.DoLog)
+                                    Debug.Log(DateTime.UtcNow + ": Unknown error happened, waiting for " + kTimeoutAfterError + " seconds");
                                 yield return new WaitForSeconds(kTimeoutAfterError);
                             }
                         }
@@ -312,7 +316,8 @@ namespace RData
                 RDataBaseContext current = _contextTreeTraversalHelperQueue.Dequeue();
                 foreach (var kvp in current.GetUpdatedFields())
                 {
-                    Debug.Log("<color=teal>Data updated in context " + current.Name + " , key=" + kvp.Key + ", value=" + kvp.Value + " </color>");
+                    if (RData.RDataLogging.DoLog)
+                        Debug.Log("<color=teal>Data updated in context " + current.Name + " , key=" + kvp.Key + ", value=" + kvp.Value + " </color>");
                     UpdateContextData(current, kvp.Key, kvp.Value);
                 }
 
@@ -340,7 +345,8 @@ namespace RData
                 }
                 else
                 {
-                    Debug.LogWarning(err);
+                    if (RData.RDataLogging.DoWarning)
+                        Debug.LogWarning(err);
                     return false;
                 }
             }
