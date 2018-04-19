@@ -33,16 +33,18 @@
     <RootNamespace>RData</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
-    <Reference Include="UnityEngine">
-      <HintPath>$(ProgramFiles)\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>$(ProgramFiles)\Unity\Editor\Data\UnityExtensions\Unity\GUISystem\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="websocket-sharp">
       <HintPath>Assets\RDataUnity\Plugins\WebsocketSharp\websocket-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>UnityEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +112,7 @@
     <Compile Include="Assets\RDataUnity\UI\Tracking\GameObjectTracker.cs" />
     <Compile Include="Assets\RDataUnity\UI\Tracking\RectTransformTracker.cs" />
     <Compile Include="Assets\RDataUnity\UI\Tracking\TransformTracker.cs" />
+    <Compile Include="Assets\RDataUnity\RDataLogging.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\RDataUnity\Libraries\LitJson.meta" />
