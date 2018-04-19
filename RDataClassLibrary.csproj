@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9CF7A1C0-4EA2-43CC-9E6F-D20C61F1FCEA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>RData</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>RData</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="UnityEngine">
+      <HintPath>$(ProgramFiles)\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(ProgramFiles)\Unity\Editor\Data\UnityExtensions\Unity\GUISystem\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="websocket-sharp">
+      <HintPath>Assets\RDataUnity\Plugins\WebsocketSharp\websocket-sharp.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assets\RDataUnity\Authorization\IAuthorizationStrategy.cs" />
+    <Compile Include="Assets\RDataUnity\Authorization\UserAuthorizationStrategy.cs" />
+    <Compile Include="Assets\RDataUnity\Contexts\Authorization\AuthorizationContext.cs" />
+    <Compile Include="Assets\RDataUnity\Contexts\RDataBaseContext.cs" />
+    <Compile Include="Assets\RDataUnity\Contexts\RDataContext.cs" />
+    <Compile Include="Assets\RDataUnity\Contexts\RDataContextStatus.cs" />
+    <Compile Include="Assets\RDataUnity\Contexts\TrackClassAttribute.cs" />
+    <Compile Include="Assets\RDataUnity\Contexts\TrackedField.cs" />
+    <Compile Include="Assets\RDataUnity\Contexts\TrackVarAttribute.cs" />
+    <Compile Include="Assets\RDataUnity\Data\ILocalDataRepository.cs" />
+    <Compile Include="Assets\RDataUnity\Data\LocalDataChunkInfo.cs" />
+    <Compile Include="Assets\RDataUnity\Data\LocalDataRepository.cs" />
+    <Compile Include="Assets\RDataUnity\Events\RDataBaseEvent.cs" />
+    <Compile Include="Assets\RDataUnity\Events\RDataEvent.cs" />
+    <Compile Include="Assets\RDataUnity\Examples\ContextDataTracking\ContextDataTrackingGameManager.cs" />
+    <Compile Include="Assets\RDataUnity\Examples\UI\UiGameManager.cs" />
+    <Compile Include="Assets\RDataUnity\Exceptions\NonAuthorizedException.cs" />
+    <Compile Include="Assets\RDataUnity\Exceptions\RDataException.cs" />
+    <Compile Include="Assets\RDataUnity\JsonRpc\IJsonRpcClient.cs" />
+    <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcBaseRequest.cs" />
+    <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcBaseResponse.cs" />
+    <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcClient.cs" />
+    <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcError.cs" />
+    <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcException.cs" />
+    <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcRequest.cs" />
+    <Compile Include="Assets\RDataUnity\JsonRpc\JsonRpcResponse.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\Extensions.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\IJsonWrapper.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonAttribute.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonData.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonException.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonMapper.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonMockWrapper.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonReader.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\JsonWriter.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\Lexer.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\ParserToken.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\Platform.cs" />
+    <Compile Include="Assets\RDataUnity\Libraries\LitJson\Unity\UnityTypeBindings.cs" />
+    <Compile Include="Assets\RDataUnity\Plugins\CoroutineManager.cs" />
+    <Compile Include="Assets\RDataUnity\Plugins\MonoBehaviourExtended.cs" />
+    <Compile Include="Assets\RDataUnity\RDataClient.cs" />
+    <Compile Include="Assets\RDataUnity\RDataSingleton.cs" />
+    <Compile Include="Assets\RDataUnity\Requests\Contexts\EndContextRequest.cs" />
+    <Compile Include="Assets\RDataUnity\Requests\Contexts\RestoreContextRequest.cs" />
+    <Compile Include="Assets\RDataUnity\Requests\Contexts\SetContextDataRequest.cs" />
+    <Compile Include="Assets\RDataUnity\Requests\Contexts\StartContextRequest.cs" />
+    <Compile Include="Assets\RDataUnity\Requests\Contexts\UpdateContextDataVariableRequest.cs" />
+    <Compile Include="Assets\RDataUnity\Requests\Events\LogEventRequest.cs" />
+    <Compile Include="Assets\RDataUnity\Requests\System\BulkRequest.cs" />
+    <Compile Include="Assets\RDataUnity\Requests\User\AuthenticateRequest.cs" />
+    <Compile Include="Assets\RDataUnity\Responses\BooleanResponse.cs" />
+    <Compile Include="Assets\RDataUnity\Tools\GameObjectHelper.cs" />
+    <Compile Include="Assets\RDataUnity\Tools\RectTransformHelper.cs" />
+    <Compile Include="Assets\RDataUnity\Tools\Time.cs" />
+    <Compile Include="Assets\RDataUnity\UI\Contexts\GameObjectActiveContext.cs" />
+    <Compile Include="Assets\RDataUnity\UI\Events\UiClickEvent.cs" />
+    <Compile Include="Assets\RDataUnity\UI\Tracking\EventSystemTracker.cs" />
+    <Compile Include="Assets\RDataUnity\UI\Tracking\GameObjectTracker.cs" />
+    <Compile Include="Assets\RDataUnity\UI\Tracking\RectTransformTracker.cs" />
+    <Compile Include="Assets\RDataUnity\UI\Tracking\TransformTracker.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\RDataUnity\Libraries\LitJson.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Extensions.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\IJsonWrapper.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonAttribute.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonData.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonException.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonMapper.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonMockWrapper.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonReader.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\JsonWriter.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Lexer.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\ParserToken.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Platform.cs.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Unity.meta" />
+    <None Include="Assets\RDataUnity\Libraries\LitJson\Unity\UnityTypeBindings.cs.meta" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+</Project>
